@@ -18,3 +18,10 @@ fn correct_error_for_none_value() {
 		assert_noop!(TemplateModule::cause_error(Origin::signed(1)), Error::<Test>::NoneValue);
 	});
 }
+
+// #[test]
+// fn provide_liquidity() {
+//     new_test_ext().execute_with(|| {
+//         assert_ok!(TemplateModule::provide_liquidity(Origin::signed(1), 1, 2, 1, 1));
+//     });
+// }

@@ -69,7 +69,9 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
         // Args
         // origin, asset1, asset2, asset1_amount, asset2_amount
-        pub fn create_token(origin: OriginFor<T>, asset1: u32, asset2: u32, asset1_amount: u32, asset2_amount: u32) -> DispatchResult {
+        pub fn provide_liquidity(origin: OriginFor<T>, asset1: u32, asset2: u32, asset1_amount: u32, asset2_amount: u32) -> DispatchResult {
+            // check if message is signed
+            // 
             Ok(())
         }
 
