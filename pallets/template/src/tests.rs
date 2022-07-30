@@ -19,9 +19,9 @@ fn correct_error_for_none_value() {
 	});
 }
 
-// #[test]
-// fn provide_liquidity() {
-//     new_test_ext().execute_with(|| {
-//         assert_ok!(TemplateModule::provide_liquidity(Origin::signed(1), 1, 2, 1, 1));
-//     });
-// }
+#[test]
+fn provide_liquidity() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(TemplateModule::provide_liquidity(Origin::signed(1), 1, 2, 1, 1));
+    });
+}

@@ -132,6 +132,20 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
 ) -> GenesisConfig {
+	let alice = endowed_accounts.get(0).unwrap();
+
+	let mut accounts = endowed_accounts
+		.iter()
+		.map(|acc| (1u32, acc.clone(), 1_000_000_000_000_000_000_000u128))
+		.collect::<Vec<_>>();
+
+	let mut second_account = endowed_accounts
+		.iter()
+		.map(|acc| (2u32, acc.clone(), 1_000_000_000_000_000_000_000u128))
+		.collect::<Vec<_>>();
+
+	accounts.append(&mut second_account);
+
 	GenesisConfig {
 		system: SystemConfig {
 			// Add Wasm runtime to storage.
@@ -152,6 +166,18 @@ fn testnet_genesis(
 			key: Some(root_key),
 		},
 		transaction_payment: Default::default(),
-		assets: Default::default(),
+		assets: {
+			AssetsConfig {
+				assets: vec![
+					(1u32, alice.clone(), false, 1000),
+					(2u32, alice.clone(), false, 1000),
+				],
+				metadata: vec![
+					(1u32, b"MAGIC".to_vec(), b"MAGIC".to_vec(), 12u8),
+					(2u32, b"BEANS".to_vec(), b"BEANS".to_vec(), 12u8),
+				],
+				accounts,
+			}
+		},
 	}
 }
