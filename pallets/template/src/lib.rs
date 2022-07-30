@@ -18,12 +18,16 @@ mod benchmarking;
 pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
+    use frame_support::traits::tokens::fungibles::Inspect;
+    use frame_support::traits::tokens::fungibles::Transfer;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+
+        type MultiAssets: Inspect<Self::AccountId> + Transfer<Self::AccountId>;
 	}
 
 	#[pallet::pallet]
@@ -62,6 +66,13 @@ pub mod pallet {
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+        // Args
+        // origin, asset1, asset2, asset1_amount, asset2_amount
+        pub fn create_token(origin: OriginFor<T>, asset1: u32, asset2: u32, asset1_amount: u32, asset2_amount: u32) -> DispatchResult {
+            Ok(())
+        }
+
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
