@@ -18,8 +18,13 @@ mod benchmarking;
 pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
-    use frame_support::traits::tokens::fungibles::Inspect;
-    use frame_support::traits::tokens::fungibles::Transfer;
+	use frame_support::traits::tokens::fungibles::{Inspect, Transfer};
+
+	type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
+	type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
+
+    // How to do tight coupling:
+	// pub trait Config: frame_system::Config + pallet_assets::Config {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -27,7 +32,7 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-        type MultiAssets: Inspect<Self::AccountId> + Transfer<Self::AccountId>;
+		type MultiAssets: Inspect<Self::AccountId> + Transfer<Self::AccountId>;
 	}
 
 	#[pallet::pallet]
@@ -59,6 +64,7 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+        NotEnoughTokensToStake,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -67,17 +73,28 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-        // Args
-        // origin, asset1, asset2, asset1_amount, asset2_amount
-        pub fn provide_liquidity(origin: OriginFor<T>, asset1: u32, asset2: u32, asset1_amount: u32, asset2_amount: u32) -> DispatchResult {
-            // check if message is signed
-            let sender = ensure_signed(origin)?;
 
-            // check if such an asset exists
+		// Args
+		// origin, asset1, asset2, asset1_amount, asset2_amount
+		// pub fn provide_liquidity(origin: OriginFor<T>, asset1: AssetsPallet::Config::AssetId,
+		// asset2: AssetsPallet::Config::AssetId, asset1_amount: u32, asset2_amount: u32) ->
+		// DispatchResult {
+		pub fn provide_liquidity(
+			origin: OriginFor<T>,
+			asset1: AssetIdOf<T>,
+			asset2: AssetIdOf<T>,
+			asset1_amount: BalanceOf<T>,
+			asset2_amount: BalanceOf<T>,
+		) -> DispatchResult {
+			// check if message is signed
+			let sender = ensure_signed(origin)?;
+            
+			// check if the user has enough assets
+			let _asset1_balance = T::MultiAssets::balance(asset1, &sender);
+            ensure!(_asset1_balance >= asset1_amount, Error::<T>::NotEnoughTokensToStake);
 
-            // check if the user has enough assets
-            Ok(())
-        }
+			Ok(())
+		}
 
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
