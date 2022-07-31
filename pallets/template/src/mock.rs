@@ -1,20 +1,22 @@
 use crate as pallet_template;
-use frame_support::traits::{ConstU16, ConstU64, ConstU128, ConstU32};
+use frame_support::{
+	parameter_types,
+	traits::{ConstU128, ConstU16, ConstU32, ConstU64},
+};
 use frame_system as system;
+use pallet_assets;
+use pallet_balances;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
-use pallet_assets;
-use pallet_balances;
-use frame_support::parameter_types;
 use system::EnsureRoot;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 type Balance = u128;
-pub type AccountId = u64;
+pub type AccountId = u32;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -25,8 +27,8 @@ frame_support::construct_runtime!(
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		TemplateModule: pallet_template::{Pallet, Call, Storage, Event<T>},
-        Assets: pallet_assets,
-        Balances: pallet_balances,
+		Assets: pallet_assets,
+		Balances: pallet_balances,
 	}
 );
 
@@ -41,7 +43,7 @@ impl system::Config for Test {
 	type BlockNumber = u64;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = u64;
+	type AccountId = u32;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type Event = Event;
@@ -71,7 +73,6 @@ impl pallet_balances::Config for Test {
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Test>;
 }
 
-
 impl pallet_assets::Config for Test {
 	type Event = Event;
 	type Balance = u128;
@@ -91,7 +92,7 @@ impl pallet_assets::Config for Test {
 
 parameter_types! {
 	pub const AssetDeposit: Balance = 100_000;
-    pub const MetadataDepositBase: Balance = 10_000;
+	pub const MetadataDepositBase: Balance = 10_000;
 	pub const MetadataDepositPerByte: Balance = 1_000;
 	pub const ApprovalDeposit: Balance = 1_000;
 	pub const StringLimit: u32 = 50;
@@ -99,7 +100,7 @@ parameter_types! {
 
 impl pallet_template::Config for Test {
 	type Event = Event;
-    type MultiAssets = Assets;
+	type MultiAssets = Assets;
 }
 
 // Build genesis storage according to the mock runtime.

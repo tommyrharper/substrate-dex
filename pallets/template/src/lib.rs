@@ -18,7 +18,7 @@ mod benchmarking;
 pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
-	use frame_support::traits::tokens::fungibles::{Inspect, Transfer};
+	use frame_support::traits::tokens::fungibles::{Inspect, Transfer, Mutate};
 
 	type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
 	type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
@@ -32,7 +32,7 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		type MultiAssets: Inspect<Self::AccountId> + Transfer<Self::AccountId>;
+		type MultiAssets: Inspect<Self::AccountId> + Transfer<Self::AccountId> + Mutate<Self::AccountId>;
 	}
 
 	#[pallet::pallet]
@@ -90,8 +90,8 @@ pub mod pallet {
 			let sender = ensure_signed(origin)?;
             
 			// check if the user has enough assets
-			let _asset1_balance = T::MultiAssets::balance(asset1, &sender);
-            ensure!(_asset1_balance >= asset1_amount, Error::<T>::NotEnoughTokensToStake);
+			let asset1_balance = T::MultiAssets::balance(asset1, &sender);
+            ensure!(asset1_balance >= asset1_amount, Error::<T>::NotEnoughTokensToStake);
 
 			Ok(())
 		}
