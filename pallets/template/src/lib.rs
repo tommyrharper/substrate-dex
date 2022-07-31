@@ -25,7 +25,6 @@ pub mod pallet {
 	};
 	use frame_system::pallet_prelude::*;
     use scale_info::prelude::vec;
-    use sp_std::str;
 
 	type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
 	type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
