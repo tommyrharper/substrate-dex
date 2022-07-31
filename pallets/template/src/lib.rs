@@ -16,14 +16,21 @@ mod benchmarking;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::pallet_prelude::*;
+	use frame_support::{
+		// dispatch::fmt::Display,
+		pallet_prelude::*,
+		sp_runtime::traits::{AccountIdConversion, AtLeast32Bit},
+		traits::tokens::fungibles::{Inspect, Mutate, Transfer},
+		Hashable, PalletId,
+	};
 	use frame_system::pallet_prelude::*;
-	use frame_support::traits::tokens::fungibles::{Inspect, Transfer, Mutate};
+    use scale_info::prelude::vec;
+    use sp_std::str;
 
 	type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
 	type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
 
-    // How to do tight coupling:
+	// How to do tight coupling:
 	// pub trait Config: frame_system::Config + pallet_assets::Config {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
@@ -32,7 +39,12 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		type MultiAssets: Inspect<Self::AccountId> + Transfer<Self::AccountId> + Mutate<Self::AccountId>;
+		type MultiAssets: Inspect<Self::AccountId>
+			+ Transfer<Self::AccountId>
+			+ Mutate<Self::AccountId>;
+
+		#[pallet::constant]
+		type PalletId: Get<PalletId>;
 	}
 
 	#[pallet::pallet]
@@ -46,6 +58,11 @@ pub mod pallet {
 	// Learn more about declaring storage items:
 	// https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
+
+	// #[pallet::storage]
+	// #[pallet::unbounded]
+	// pub(super) type Proofs<T: Config> = StorageMap<_, Blake2_128Concat, Vec<u8>, (T::AccountId,
+	// T::BlockNumber), OptionQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
@@ -64,21 +81,46 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
-        NotEnoughTokensToStake,
-        ProvidedInvalidAssetIds,
+		NotEnoughTokensToStake,
+		ProvidedInvalidAssetIds,
+	}
+
+	impl<T: Config> Pallet<T> {
+		pub fn account_id() -> T::AccountId {
+			T::PalletId::get().into_account_truncating()
+		}
+
+		pub fn sub_account_id(sub: &str) -> T::AccountId {
+			T::PalletId::get().into_sub_account_truncating(sub)
+		}
+
+		pub fn pot(asset_id: AssetIdOf<T>) -> BalanceOf<T> {
+			T::MultiAssets::balance(asset_id, &Self::account_id())
+		}
+
+		pub fn sub_pot(asset_id: AssetIdOf<T>, sub: &str) -> BalanceOf<T> {
+			T::MultiAssets::balance(asset_id, &Self::sub_account_id(sub))
+		}
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
-	impl<T: Config> Pallet<T> {
+	impl<T: Config> Pallet<T>
+	where
+		<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
+		<T::MultiAssets as Inspect<T::AccountId>>::AssetId: Encode,
+		/* where <T::MultiAssets
+		 * as Inspect<T::AccountId>>::AssetId:
+		 * AtLeast32Bit,
+		 * <T::MultiAssets as
+		 * Inspect<T::AccountId>>::AssetId:
+		 * Display */
+	{
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 
-		// Args
-		// origin, asset1, asset2, asset1_amount, asset2_amount
-		// pub fn provide_liquidity(origin: OriginFor<T>, asset1: AssetsPallet::Config::AssetId,
-		// asset2: AssetsPallet::Config::AssetId, asset1_amount: u32, asset2_amount: u32) ->
+		// Args AssetsPallet::Config::AssetId,
 		// DispatchResult {
 		pub fn provide_liquidity(
 			origin: OriginFor<T>,
@@ -90,16 +132,51 @@ pub mod pallet {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
 
-            ensure!(asset1 != asset2, Error::<T>::ProvidedInvalidAssetIds);
-            
+			ensure!(asset1 != asset2, Error::<T>::ProvidedInvalidAssetIds);
+
 			// check if the user has enough assets
 			let asset1_balance = T::MultiAssets::balance(asset1, &sender);
-            ensure!(asset1_balance >= asset1_amount, Error::<T>::NotEnoughTokensToStake);
+			ensure!(asset1_balance >= asset1_amount, Error::<T>::NotEnoughTokensToStake);
 
 			let asset2_balance = T::MultiAssets::balance(asset2, &sender);
-            ensure!(asset2_balance >= asset2_amount, Error::<T>::NotEnoughTokensToStake);
+			ensure!(asset2_balance >= asset2_amount, Error::<T>::NotEnoughTokensToStake);
 
-            
+            let mut assets = vec![asset1, asset2];
+            assets.sort();
+
+
+            let mut hashed_asset_1 = asset1.twox_64_concat();
+            let mut hashed_asset_2 = asset2.twox_64_concat();
+
+            hashed_asset_1.append(&mut hashed_asset_2);
+
+            let sub: &str = str::from_utf8(&hashed_asset_1).unwrap();
+
+            let sub_account_id = Self::sub_account_id(&sub);
+
+			let res = T::MultiAssets::transfer(
+				asset1,
+				&sender,
+				&sub_account_id,
+				asset1_amount,
+				true,
+			)
+			.expect("Deposit of liquidity for asset1 failed.");
+			let res = T::MultiAssets::transfer(
+				asset1,
+				&sender,
+				&sub_account_id,
+				asset1_amount,
+				true,
+			)
+			.expect("Deposit of liquidity for asset2 failed.");
+
+			// let pallet_id = T::PalletId::get().into_account_truncating();
+			// AccountIdConversion::into_sub_account_truncating(&self, sub);
+			// T::Pallets
+
+			// T::MultiAssets::hold(asset1, &sender, asset1_amount).expect("Unable to hold asset1");
+			// T::MultiAssets::hold(asset2, &sender, asset2_amount).expect("Unable to hold asset2");
 
 			Ok(())
 		}

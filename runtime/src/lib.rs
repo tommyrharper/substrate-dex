@@ -6,6 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+use frame_support::PalletId;
 use frame_system::EnsureRoot;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
@@ -263,6 +264,14 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
+parameter_types! {
+	pub const AssetDeposit: Balance = 100_000;
+    pub const MetadataDepositBase: Balance = 10_000;
+	pub const MetadataDepositPerByte: Balance = 1_000;
+	pub const ApprovalDeposit: Balance = 1_000;
+	pub const StringLimit: u32 = 50;
+}
+
 impl pallet_assets::Config for Runtime {
 	type Event = Event;
 	type Balance = u128;
@@ -281,17 +290,14 @@ impl pallet_assets::Config for Runtime {
 }
 
 parameter_types! {
-	pub const AssetDeposit: Balance = 100_000;
-    pub const MetadataDepositBase: Balance = 10_000;
-	pub const MetadataDepositPerByte: Balance = 1_000;
-	pub const ApprovalDeposit: Balance = 1_000;
-	pub const StringLimit: u32 = 50;
+	pub const PoolPalletId: PalletId = PalletId(*b"the/pool");
 }
 
 /// Configure the pallet-template in pallets/template.
 impl pallet_template::Config for Runtime {
 	type Event = Event;
     type MultiAssets = Assets;
+	type PalletId = PoolPalletId;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
