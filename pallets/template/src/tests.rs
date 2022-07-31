@@ -11,8 +11,8 @@ mod tests {
 	const USER: AccountId = 1u32;
 	const ASSET1: u32 = 1u32;
 	const ASSET2: u32 = 2u32;
-	const ASSET1_AMOUNT: u128 = 1;
-	const ASSET2_AMOUNT: u128 = 1;
+	const ASSET1_AMOUNT: u128 = 1_000_000;
+	const ASSET2_AMOUNT: u128 = 1_000_000;
 	const MINTED_AMOUNT: u128 = 1_000_000_000;
 
 	fn give_user_asset(user: AccountId, asset: u32, amount: u128) {

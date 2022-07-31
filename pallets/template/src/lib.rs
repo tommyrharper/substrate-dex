@@ -147,22 +147,22 @@ pub mod pallet {
 
             let sub_account_id = Self::sub_account_id(&hashed_assets);
 
-			let res = T::MultiAssets::transfer(
+			let res1 = T::MultiAssets::transfer(
 				asset1,
 				&sender,
 				&sub_account_id,
 				asset1_amount,
-				true,
-			)
-			.expect("Deposit of liquidity for asset1 failed.");
-			let res = T::MultiAssets::transfer(
-				asset1,
+				false,
+			);
+			// .expect("Deposit of liquidity for asset1 failed.");
+			let res2 = T::MultiAssets::transfer(
+				asset2,
 				&sender,
 				&sub_account_id,
-				asset1_amount,
-				true,
-			)
-			.expect("Deposit of liquidity for asset2 failed.");
+				asset2_amount,
+				false,
+			);
+			// .expect("Deposit of liquidity for asset2 failed.");
 
 			Ok(())
 		}
