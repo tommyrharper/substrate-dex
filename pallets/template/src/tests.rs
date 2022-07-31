@@ -3,7 +3,6 @@ use frame_support::{
 	assert_noop, assert_ok,
 	traits::{tokens::fungibles::Mutate, Currency},
 };
-use frame_system::{Pallet as System, RawOrigin};
 
 const USER: AccountId = 1u32;
 const Asset1: u32 = 1u32;
@@ -61,9 +60,9 @@ fn provide_liquidity_without_second_token() {
 fn provide_liquidity_without_first_token() {
 	new_test_ext().execute_with(|| {
 		let origin = Origin::signed(USER);
-		Balances::make_free_balance_be(&USER, 1_000_000_000);
+		Balances::make_free_balance_be(&USER, MintedAmount);
 		Assets::create(origin, Asset2, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(Asset2, &USER, 1_000_000_000).expect("Minting failed");
+		Assets::mint_into(Asset2, &USER, MintedAmount).expect("Minting failed");
 
 		let origin = Origin::signed(USER);
 		assert_noop!(
@@ -77,13 +76,13 @@ fn provide_liquidity_without_first_token() {
 fn provide_liquidity() {
 	new_test_ext().execute_with(|| {
 		let origin = Origin::signed(USER);
-		Balances::make_free_balance_be(&USER, 1_000_000_000);
+		Balances::make_free_balance_be(&USER, MintedAmount);
 		Assets::create(origin, Asset1, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(Asset1, &USER, 1_000_000_000).expect("Minting failed");
+		Assets::mint_into(Asset1, &USER, MintedAmount).expect("Minting failed");
 
 		let origin = Origin::signed(USER);
 		Assets::create(origin, Asset2, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(Asset2, &USER, 1_000_000_000).expect("Minting failed");
+		Assets::mint_into(Asset2, &USER, MintedAmount).expect("Minting failed");
 
 		let origin = Origin::signed(USER);
 		assert_ok!(TemplateModule::provide_liquidity(
