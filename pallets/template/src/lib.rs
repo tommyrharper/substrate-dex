@@ -93,6 +93,9 @@ pub mod pallet {
 			let asset1_balance = T::MultiAssets::balance(asset1, &sender);
             ensure!(asset1_balance >= asset1_amount, Error::<T>::NotEnoughTokensToStake);
 
+			let asset2_balance = T::MultiAssets::balance(asset2, &sender);
+            ensure!(asset2_balance >= asset2_amount, Error::<T>::NotEnoughTokensToStake);
+
 			Ok(())
 		}
 
