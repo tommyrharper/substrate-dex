@@ -11,6 +11,13 @@ const ASSET1_AMOUNT: u128 = 1;
 const ASSET2_AMOUNT: u128 = 1;
 const MINTED_AMOUNT: u128 = 1_000_000_000;
 
+fn give_user_asset(user: AccountId, asset: u32, amount: u128) {
+    let origin = Origin::signed(user);
+    Balances::make_free_balance_be(&user, amount);
+    Assets::create(origin, asset, user, 1).expect("Asset creation failed");
+    Assets::mint_into(asset, &user, amount).expect("Minting failed");
+}
+
 #[test]
 fn it_works_for_default_value() {
 	new_test_ext().execute_with(|| {
@@ -41,12 +48,12 @@ fn provide_liquidity_without_any_tokens() {
 }
 
 #[test]
-fn provide_liquidity_without_second_token() {
+fn provide_liquidity_without_first_token() {
 	new_test_ext().execute_with(|| {
 		let origin = Origin::signed(USER);
 		Balances::make_free_balance_be(&USER, MINTED_AMOUNT);
-		Assets::create(origin, ASSET1, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(ASSET1, &USER, MINTED_AMOUNT).expect("Minting failed");
+		Assets::create(origin, ASSET2, USER, 1).expect("Asset creation failed");
+		Assets::mint_into(ASSET2, &USER, MINTED_AMOUNT).expect("Minting failed");
 
 		let origin = Origin::signed(USER);
 		assert_noop!(
@@ -57,12 +64,12 @@ fn provide_liquidity_without_second_token() {
 }
 
 #[test]
-fn provide_liquidity_without_first_token() {
+fn provide_liquidity_without_second_token() {
 	new_test_ext().execute_with(|| {
 		let origin = Origin::signed(USER);
 		Balances::make_free_balance_be(&USER, MINTED_AMOUNT);
-		Assets::create(origin, ASSET2, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(ASSET2, &USER, MINTED_AMOUNT).expect("Minting failed");
+		Assets::create(origin, ASSET1, USER, 1).expect("Asset creation failed");
+		Assets::mint_into(ASSET1, &USER, MINTED_AMOUNT).expect("Minting failed");
 
 		let origin = Origin::signed(USER);
 		assert_noop!(
@@ -92,5 +99,25 @@ fn provide_liquidity() {
 			ASSET1_AMOUNT,
 			ASSET2_AMOUNT,
 		),);
+	});
+}
+
+#[test]
+fn provide_liquidity_same_asset_ids() {
+	new_test_ext().execute_with(|| {
+		let origin = Origin::signed(USER);
+		Balances::make_free_balance_be(&USER, MINTED_AMOUNT);
+		Assets::create(origin, ASSET1, USER, 1).expect("Asset creation failed");
+		Assets::mint_into(ASSET1, &USER, MINTED_AMOUNT).expect("Minting failed");
+
+		let origin = Origin::signed(USER);
+		Assets::create(origin, ASSET2, USER, 1).expect("Asset creation failed");
+		Assets::mint_into(ASSET2, &USER, MINTED_AMOUNT).expect("Minting failed");
+
+		let origin = Origin::signed(USER);
+		assert_noop!(
+			TemplateModule::provide_liquidity(origin, ASSET1, ASSET1, ASSET1_AMOUNT, ASSET2_AMOUNT),
+			Error::<Test>::ProvidedInvalidAssetIds
+		);
 	});
 }

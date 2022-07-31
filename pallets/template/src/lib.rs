@@ -65,6 +65,7 @@ pub mod pallet {
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
         NotEnoughTokensToStake,
+        ProvidedInvalidAssetIds,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -88,6 +89,8 @@ pub mod pallet {
 		) -> DispatchResult {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
+
+            ensure!(asset1 != asset2, Error::<T>::ProvidedInvalidAssetIds);
             
 			// check if the user has enough assets
 			let asset1_balance = T::MultiAssets::balance(asset1, &sender);
@@ -95,6 +98,8 @@ pub mod pallet {
 
 			let asset2_balance = T::MultiAssets::balance(asset2, &sender);
             ensure!(asset2_balance >= asset2_amount, Error::<T>::NotEnoughTokensToStake);
+
+            
 
 			Ok(())
 		}
