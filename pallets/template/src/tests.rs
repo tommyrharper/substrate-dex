@@ -5,11 +5,11 @@ use frame_support::{
 };
 
 const USER: AccountId = 1u32;
-const Asset1: u32 = 1u32;
-const Asset2: u32 = 2u32;
-const Asset1Amount: u128 = 1;
-const Asset2Amount: u128 = 1;
-const MintedAmount: u128 = 1_000_000_000;
+const ASSET1: u32 = 1u32;
+const ASSET2: u32 = 2u32;
+const ASSET1_AMOUNT: u128 = 1;
+const ASSET2_AMOUNT: u128 = 1;
+const MINTED_AMOUNT: u128 = 1_000_000_000;
 
 #[test]
 fn it_works_for_default_value() {
@@ -34,7 +34,7 @@ fn provide_liquidity_without_any_tokens() {
 	new_test_ext().execute_with(|| {
 		let origin = Origin::signed(USER);
 		assert_noop!(
-			TemplateModule::provide_liquidity(origin, Asset1, Asset2, Asset1Amount, Asset2Amount),
+			TemplateModule::provide_liquidity(origin, ASSET1, ASSET2, ASSET1_AMOUNT, ASSET2_AMOUNT),
 			Error::<Test>::NotEnoughTokensToStake
 		);
 	});
@@ -44,13 +44,13 @@ fn provide_liquidity_without_any_tokens() {
 fn provide_liquidity_without_second_token() {
 	new_test_ext().execute_with(|| {
 		let origin = Origin::signed(USER);
-		Balances::make_free_balance_be(&USER, MintedAmount);
-		Assets::create(origin, Asset1, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(Asset1, &USER, MintedAmount).expect("Minting failed");
+		Balances::make_free_balance_be(&USER, MINTED_AMOUNT);
+		Assets::create(origin, ASSET1, USER, 1).expect("Asset creation failed");
+		Assets::mint_into(ASSET1, &USER, MINTED_AMOUNT).expect("Minting failed");
 
 		let origin = Origin::signed(USER);
 		assert_noop!(
-			TemplateModule::provide_liquidity(origin, Asset1, Asset2, Asset1Amount, Asset2Amount),
+			TemplateModule::provide_liquidity(origin, ASSET1, ASSET2, ASSET1_AMOUNT, ASSET2_AMOUNT),
 			Error::<Test>::NotEnoughTokensToStake
 		);
 	});
@@ -60,13 +60,13 @@ fn provide_liquidity_without_second_token() {
 fn provide_liquidity_without_first_token() {
 	new_test_ext().execute_with(|| {
 		let origin = Origin::signed(USER);
-		Balances::make_free_balance_be(&USER, MintedAmount);
-		Assets::create(origin, Asset2, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(Asset2, &USER, MintedAmount).expect("Minting failed");
+		Balances::make_free_balance_be(&USER, MINTED_AMOUNT);
+		Assets::create(origin, ASSET2, USER, 1).expect("Asset creation failed");
+		Assets::mint_into(ASSET2, &USER, MINTED_AMOUNT).expect("Minting failed");
 
 		let origin = Origin::signed(USER);
 		assert_noop!(
-			TemplateModule::provide_liquidity(origin, Asset1, Asset2, Asset1Amount, Asset2Amount),
+			TemplateModule::provide_liquidity(origin, ASSET1, ASSET2, ASSET1_AMOUNT, ASSET2_AMOUNT),
 			Error::<Test>::NotEnoughTokensToStake
 		);
 	});
@@ -76,21 +76,21 @@ fn provide_liquidity_without_first_token() {
 fn provide_liquidity() {
 	new_test_ext().execute_with(|| {
 		let origin = Origin::signed(USER);
-		Balances::make_free_balance_be(&USER, MintedAmount);
-		Assets::create(origin, Asset1, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(Asset1, &USER, MintedAmount).expect("Minting failed");
+		Balances::make_free_balance_be(&USER, MINTED_AMOUNT);
+		Assets::create(origin, ASSET1, USER, 1).expect("Asset creation failed");
+		Assets::mint_into(ASSET1, &USER, MINTED_AMOUNT).expect("Minting failed");
 
 		let origin = Origin::signed(USER);
-		Assets::create(origin, Asset2, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(Asset2, &USER, MintedAmount).expect("Minting failed");
+		Assets::create(origin, ASSET2, USER, 1).expect("Asset creation failed");
+		Assets::mint_into(ASSET2, &USER, MINTED_AMOUNT).expect("Minting failed");
 
 		let origin = Origin::signed(USER);
 		assert_ok!(TemplateModule::provide_liquidity(
 			origin,
-			Asset1,
-			Asset2,
-			Asset1Amount,
-			Asset2Amount
+			ASSET1,
+			ASSET2,
+			ASSET1_AMOUNT,
+			ASSET2_AMOUNT,
 		),);
 	});
 }
