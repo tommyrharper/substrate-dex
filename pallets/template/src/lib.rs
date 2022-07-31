@@ -90,7 +90,7 @@ pub mod pallet {
 			T::PalletId::get().into_account_truncating()
 		}
 
-		pub fn sub_account_id(sub: &str) -> T::AccountId {
+		pub fn sub_account_id(sub: &[u8; 16]) -> T::AccountId {
 			T::PalletId::get().into_sub_account_truncating(sub)
 		}
 
@@ -98,7 +98,7 @@ pub mod pallet {
 			T::MultiAssets::balance(asset_id, &Self::account_id())
 		}
 
-		pub fn sub_pot(asset_id: AssetIdOf<T>, sub: &str) -> BalanceOf<T> {
+		pub fn sub_pot(asset_id: AssetIdOf<T>, sub: &[u8; 16]) -> BalanceOf<T> {
 			T::MultiAssets::balance(asset_id, &Self::sub_account_id(sub))
 		}
 	}
@@ -144,30 +144,26 @@ pub mod pallet {
             let mut assets = vec![asset1, asset2];
             assets.sort();
 
-            let hashed_assets = assets.twox_128().to_vec();
-            let sub: &str = str::from_utf8(&hashed_assets).unwrap();
+            let hashed_assets = assets.twox_128();
 
-            // let sub_account_id = Self::sub_account_id(&sub);
+            let sub_account_id = Self::sub_account_id(&hashed_assets);
 
-			// let res = T::MultiAssets::transfer(
-			// 	asset1,
-			// 	&sender,
-			// 	&sub_account_id,
-			// 	asset1_amount,
-			// 	true,
-			// )
-			// .expect("Deposit of liquidity for asset1 failed.");
-			// let res = T::MultiAssets::transfer(
-			// 	asset1,
-			// 	&sender,
-			// 	&sub_account_id,
-			// 	asset1_amount,
-			// 	true,
-			// )
-			// .expect("Deposit of liquidity for asset2 failed.");
-
-			// T::MultiAssets::hold(asset1, &sender, asset1_amount).expect("Unable to hold asset1");
-			// T::MultiAssets::hold(asset2, &sender, asset2_amount).expect("Unable to hold asset2");
+			let res = T::MultiAssets::transfer(
+				asset1,
+				&sender,
+				&sub_account_id,
+				asset1_amount,
+				true,
+			)
+			.expect("Deposit of liquidity for asset1 failed.");
+			let res = T::MultiAssets::transfer(
+				asset1,
+				&sender,
+				&sub_account_id,
+				asset1_amount,
+				true,
+			)
+			.expect("Deposit of liquidity for asset2 failed.");
 
 			Ok(())
 		}
