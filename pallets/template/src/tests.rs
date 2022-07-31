@@ -18,6 +18,11 @@ fn give_user_asset(user: AccountId, asset: u32, amount: u128) {
     Assets::mint_into(asset, &user, amount).expect("Minting failed");
 }
 
+fn give_user_two_assets(user: AccountId, asset1: u32, asset2: u32, amount: u128) {
+    give_user_asset(user, asset1, amount);
+    give_user_asset(user, asset2, amount);
+}
+
 #[test]
 fn it_works_for_default_value() {
 	new_test_ext().execute_with(|| {
@@ -50,10 +55,7 @@ fn provide_liquidity_without_any_tokens() {
 #[test]
 fn provide_liquidity_without_first_token() {
 	new_test_ext().execute_with(|| {
-		let origin = Origin::signed(USER);
-		Balances::make_free_balance_be(&USER, MINTED_AMOUNT);
-		Assets::create(origin, ASSET2, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(ASSET2, &USER, MINTED_AMOUNT).expect("Minting failed");
+		give_user_asset(USER, ASSET2, MINTED_AMOUNT);
 
 		let origin = Origin::signed(USER);
 		assert_noop!(
@@ -66,10 +68,7 @@ fn provide_liquidity_without_first_token() {
 #[test]
 fn provide_liquidity_without_second_token() {
 	new_test_ext().execute_with(|| {
-		let origin = Origin::signed(USER);
-		Balances::make_free_balance_be(&USER, MINTED_AMOUNT);
-		Assets::create(origin, ASSET1, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(ASSET1, &USER, MINTED_AMOUNT).expect("Minting failed");
+		give_user_asset(USER, ASSET1, MINTED_AMOUNT);
 
 		let origin = Origin::signed(USER);
 		assert_noop!(
@@ -82,14 +81,7 @@ fn provide_liquidity_without_second_token() {
 #[test]
 fn provide_liquidity() {
 	new_test_ext().execute_with(|| {
-		let origin = Origin::signed(USER);
-		Balances::make_free_balance_be(&USER, MINTED_AMOUNT);
-		Assets::create(origin, ASSET1, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(ASSET1, &USER, MINTED_AMOUNT).expect("Minting failed");
-
-		let origin = Origin::signed(USER);
-		Assets::create(origin, ASSET2, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(ASSET2, &USER, MINTED_AMOUNT).expect("Minting failed");
+        give_user_two_assets(USER, ASSET1, ASSET2, MINTED_AMOUNT);
 
 		let origin = Origin::signed(USER);
 		assert_ok!(TemplateModule::provide_liquidity(
@@ -105,14 +97,7 @@ fn provide_liquidity() {
 #[test]
 fn provide_liquidity_same_asset_ids() {
 	new_test_ext().execute_with(|| {
-		let origin = Origin::signed(USER);
-		Balances::make_free_balance_be(&USER, MINTED_AMOUNT);
-		Assets::create(origin, ASSET1, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(ASSET1, &USER, MINTED_AMOUNT).expect("Minting failed");
-
-		let origin = Origin::signed(USER);
-		Assets::create(origin, ASSET2, USER, 1).expect("Asset creation failed");
-		Assets::mint_into(ASSET2, &USER, MINTED_AMOUNT).expect("Minting failed");
+        give_user_two_assets(USER, ASSET1, ASSET2, MINTED_AMOUNT);
 
 		let origin = Origin::signed(USER);
 		assert_noop!(
