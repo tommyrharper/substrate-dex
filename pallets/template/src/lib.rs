@@ -184,17 +184,11 @@ pub mod pallet {
 			sender: &T::AccountId,
 			pool_id: &T::AccountId,
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
-			// asset_id: AssetIdOf<T>,
 		) -> Result<(), DispatchError> {
 			let mut pool_id_hash = pool_id.twox_128();
-            // modulus u32 max
             let lp_tokens_amount = get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
-            let b: AssetIdOf<T> = 3u32.into();
-
             let res: u32 = Decode::decode(&mut &pool_id_hash[..]).unwrap();
             let asset_id: AssetIdOf<T> = res.into();
-            // let c = HexDisplay::from(&pool_id_hash);
-            // let thing = HexDisplay::encode(&pool_id_hash);
 			T::MultiAssets::create(asset_id, Self::account_id(), true, 0u32.into())?;
 			T::MultiAssets::mint_into(asset_id, sender, lp_tokens_amount)?;
 			Ok(())
