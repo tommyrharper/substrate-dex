@@ -14,22 +14,7 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
-// struct DexMath;
-
-// impl DexMath {
-// 	fn get_lp_tokens_for_new_pool(token_a_amount: u32, token_b_amount: u32) -> u32 {
-// 		// add sqrt
-// 		token_a_amount * token_b_amount
-// 	}
-
-// 	fn get_lp_tokens_for_existing_pool(
-// 		new_token_amount: u32,
-// 		current_token_amount: u32,
-// 		total_lp_token_supply: u32,
-// 	) -> u32 {
-// 		(new_token_amount / current_token_amount) * total_lp_token_supply
-// 	}
-// }
+mod dex_math;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -47,6 +32,7 @@ pub mod pallet {
 	};
 	use frame_system::pallet_prelude::*;
 	use scale_info::prelude::vec;
+    use crate::dex_math::*;
 
 	type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
 	type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
@@ -65,10 +51,12 @@ pub mod pallet {
 			+ Mutate<Self::AccountId>
 			+ Create<Self::AccountId>;
 
-		type Balances: Currency<Self::AccountId>;
+        type Balances: Currency<Self::AccountId>;
 
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
+
+        // type StartingAssetID: Get<AssetIdOf<Self>>;
 	}
 
 	#[pallet::pallet]
@@ -114,6 +102,8 @@ pub mod pallet {
 	impl<T: Config> Pallet<T>
 	where
 		<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
+		// <T::MultiAssets as Inspect<T::AccountId>>::Balance: AtLeast32Bit,
+		// T::AccountId: AtLeast32Bit,
 	{
 		// TODO: check which of these functions need to be published
 		pub fn account_id() -> T::AccountId {
@@ -188,14 +178,18 @@ pub mod pallet {
 			Ok(())
 		}
 
+        // TODO: get rid of unwraps
 		pub fn create_new_lp_tokens(
 			sender: &T::AccountId,
 			pool_id: &T::AccountId,
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
-            asset_id: AssetIdOf<T>,
+			asset_id: AssetIdOf<T>,
 		) -> Result<(), DispatchError> {
-			// let asset_id = pool_id.twox_128();
-			T::MultiAssets::create(asset_id, Self::account_id(), true, asset_amounts.0)?;
+			let pool_id_hash = pool_id.twox_128();
+            let lp_tokens_amount = get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
+            // let b: AssetIdOf<T> = 3u32.into();
+            // let b: AssetIdOf<T> = asset_id;
+			// T::MultiAssets::create(b, Self::account_id(), true, 0u32.into())?;
 			T::MultiAssets::mint_into(asset_id, sender, asset_amounts.0)?;
 			Ok(())
 		}
