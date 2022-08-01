@@ -100,6 +100,19 @@ pub mod pallet {
 		pub fn sub_pot(asset_id: AssetIdOf<T>, sub: &[u8; 16]) -> BalanceOf<T> {
 			T::MultiAssets::balance(asset_id, &Self::sub_account_id(sub))
 		}
+
+        pub fn has_enough_tokens(asset: AssetIdOf<T>, amount: BalanceOf<T>, sender: &T::AccountId) -> bool {
+            let asset_balance = T::MultiAssets::balance(asset, &sender);
+            asset_balance >= amount
+        }
+
+        pub fn has_enough_of_both_tokens(
+            sender: &T::AccountId,
+            assets: (AssetIdOf<T>, AssetIdOf<T>),
+            asset_amounts: (BalanceOf<T>, BalanceOf<T>),
+        ) -> bool {
+            Self::has_enough_tokens(assets.0, asset_amounts.0, sender) && Self::has_enough_tokens(assets.1, asset_amounts.1, sender)
+        }
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -133,12 +146,15 @@ pub mod pallet {
 
 			ensure!(asset1 != asset2, Error::<T>::ProvidedInvalidAssetIds);
 
-			// check if the user has enough assets
-			let asset1_balance = T::MultiAssets::balance(asset1, &sender);
-			ensure!(asset1_balance >= asset1_amount, Error::<T>::NotEnoughTokensToStake);
-
-			let asset2_balance = T::MultiAssets::balance(asset2, &sender);
-			ensure!(asset2_balance >= asset2_amount, Error::<T>::NotEnoughTokensToStake);
+            // check if sender has enough tokens to stake
+            ensure!(
+                Self::has_enough_of_both_tokens(
+                    &sender,
+                    (asset1, asset2),
+                    (asset1_amount, asset2_amount),
+                ),
+                Error::<T>::NotEnoughTokensToStake
+            );
 
             let mut assets = vec![asset1, asset2];
             assets.sort();
