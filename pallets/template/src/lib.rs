@@ -175,9 +175,19 @@ pub mod pallet {
 		) -> Result<(), DispatchError> {
 			let pool_id = Self::initialize_pool(asset_pair);
 			Self::transfer_tokens_to_pool(sender, &pool_id, asset_pair, asset_amounts)?;
-            Self::create_new_lp_tokens(sender, &pool_id, asset_amounts);
+            Self::create_new_lp_tokens(sender, &pool_id, asset_amounts)?;
 			Ok(())
 		}
+
+        pub fn get_lp_token_id(
+            pool_id: &T::AccountId
+        ) -> AssetIdOf<T> {
+			let mut pool_id_hash = pool_id.twox_128();
+            // TODO: remove unwrap
+            let pool_id_hash_number: u32 = Decode::decode(&mut &pool_id_hash[..]).unwrap();
+            let asset_id: AssetIdOf<T> = pool_id_hash_number.into();
+            asset_id
+        }
 
         // TODO: get rid of unwraps
 		pub fn create_new_lp_tokens(
@@ -185,11 +195,9 @@ pub mod pallet {
 			pool_id: &T::AccountId,
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 		) -> Result<(), DispatchError> {
-			let mut pool_id_hash = pool_id.twox_128();
             let lp_tokens_amount = get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
-            let res: u32 = Decode::decode(&mut &pool_id_hash[..]).unwrap();
-            let asset_id: AssetIdOf<T> = res.into();
-			T::MultiAssets::create(asset_id, Self::account_id(), true, 0u32.into())?;
+            let asset_id: AssetIdOf<T> = Self::get_lp_token_id(pool_id);
+			T::MultiAssets::create(asset_id, Self::account_id(), true, 1u32.into())?;
 			T::MultiAssets::mint_into(asset_id, sender, lp_tokens_amount)?;
 			Ok(())
 		}
@@ -243,9 +251,6 @@ pub mod pallet {
 				(asset1, asset2),
 				(asset1_amount, asset2_amount),
 			)?;
-
-			// Assets::create(origin, asset, user, 1).expect("Asset creation failed");
-			// Assets::mint_into(asset, &user, amount).expect("Minting failed");
 
 			Ok(())
 		}
