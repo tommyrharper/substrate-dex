@@ -47,6 +47,16 @@ mod tests {
 		check_users_balance(pool_id, asset_pair.1, asset_amounts.1);
 	}
 
+	fn check_lp_tokens_sent_to_provider(
+		user: AccountId,
+		asset_pair: (u32, u32),
+		amount: u128,
+	) {
+        let pool_id = TemplateModule::get_pool_id(asset_pair);
+        let lp_token_id = TemplateModule::get_lp_token_id(&pool_id);
+        check_users_balance(user, lp_token_id, amount);
+	}
+
 	#[test]
 	fn it_works_for_default_value() {
 		new_test_ext().execute_with(|| {
@@ -162,6 +172,8 @@ mod tests {
 				(MINTED_AMOUNT, MINTED_AMOUNT),
 				(ASSET1_AMOUNT, ASSET2_AMOUNT),
 			);
+
+            check_lp_tokens_sent_to_provider(USER, (ASSET1, ASSET2), ASSET1_AMOUNT);
 		});
 	}
 }

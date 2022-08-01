@@ -182,7 +182,7 @@ pub mod pallet {
         pub fn get_lp_token_id(
             pool_id: &T::AccountId
         ) -> AssetIdOf<T> {
-			let mut pool_id_hash = pool_id.twox_128();
+			let pool_id_hash = pool_id.twox_128();
             // TODO: remove unwrap
             let pool_id_hash_number: u32 = Decode::decode(&mut &pool_id_hash[..]).unwrap();
             let asset_id: AssetIdOf<T> = pool_id_hash_number.into();
