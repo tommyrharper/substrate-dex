@@ -169,10 +169,10 @@ pub mod pallet {
 
 		pub fn transfer_tokens_to_new_pool(
 			sender: &T::AccountId,
+			pool_id: &T::AccountId,
 			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 		) -> Result<(), DispatchError> {
-			let pool_id = Self::initialize_pool(asset_pair);
 			Self::transfer_tokens_to_pool(sender, &pool_id, asset_pair, asset_amounts)?;
             Self::send_lp_tokens_to_pool_creator(sender, &pool_id, asset_amounts)?;
 			Ok(())
@@ -244,9 +244,12 @@ pub mod pallet {
 				(asset1_amount, asset2_amount),
 			)?;
 
+			let pool_id = Self::initialize_pool((asset1, asset2));
+
 			// Transfer the tokens to the new pool
 			Self::transfer_tokens_to_new_pool(
 				&sender,
+                &pool_id,
 				(asset1, asset2),
 				(asset1_amount, asset2_amount),
 			)?;
