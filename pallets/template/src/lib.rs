@@ -174,7 +174,7 @@ pub mod pallet {
 		) -> Result<(), DispatchError> {
 			let pool_id = Self::initialize_pool(asset_pair);
 			Self::transfer_tokens_to_pool(sender, &pool_id, asset_pair, asset_amounts)?;
-            Self::create_new_lp_tokens(sender, &pool_id, asset_amounts)?;
+            Self::send_lp_tokens_to_pool_creator(sender, &pool_id, asset_amounts)?;
 			Ok(())
 		}
 
@@ -189,7 +189,7 @@ pub mod pallet {
         }
 
         // TODO: get rid of unwraps
-		pub fn create_new_lp_tokens(
+		pub fn send_lp_tokens_to_pool_creator(
 			sender: &T::AccountId,
 			pool_id: &T::AccountId,
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
