@@ -174,7 +174,6 @@ pub mod pallet {
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 		) -> Result<(), DispatchError> {
 			Self::transfer_tokens_to_pool(sender, &pool_id, asset_pair, asset_amounts)?;
-            Self::send_lp_tokens_to_pool_creator(sender, &pool_id, asset_amounts)?;
 			Ok(())
 		}
 
@@ -253,6 +252,8 @@ pub mod pallet {
 				(asset1, asset2),
 				(asset1_amount, asset2_amount),
 			)?;
+
+            Self::send_lp_tokens_to_pool_creator(&sender, &pool_id, (asset1_amount, asset2_amount))?;
 
 			Ok(())
 		}
