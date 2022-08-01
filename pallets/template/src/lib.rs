@@ -123,14 +123,17 @@ pub mod pallet {
 			asset_balance >= amount
 		}
 
-        // TODO: refactor to return result
 		pub fn has_enough_of_both_tokens(
 			sender: &T::AccountId,
 			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
-		) -> bool {
-			Self::has_enough_tokens(asset_pair.0, asset_amounts.0, sender) &&
+		) -> DispatchResult {
+			if Self::has_enough_tokens(asset_pair.0, asset_amounts.0, sender) &&
 				Self::has_enough_tokens(asset_pair.1, asset_amounts.1, sender)
+			{
+				return Ok(());
+			}
+			Err(Error::<T>::NotEnoughTokensToStake.into())
 		}
 
 		pub fn transfer_tokens_to_new_pool(
@@ -193,18 +196,15 @@ pub mod pallet {
 			let sender = ensure_signed(origin)?;
 
 			// Ensure that the assets are valid.
-            // TODO: refactor into method
+			// TODO: refactor into method
 			ensure!(asset1 != asset2, Error::<T>::ProvidedInvalidAssetIds);
 
 			// check if sender has enough tokens to stake
-			ensure!(
-				Self::has_enough_of_both_tokens(
-					&sender,
-					(asset1, asset2),
-					(asset1_amount, asset2_amount),
-				),
-				Error::<T>::NotEnoughTokensToStake
-			);
+            Self::has_enough_of_both_tokens(
+                &sender,
+                (asset1, asset2),
+                (asset1_amount, asset2_amount),
+            )?;
 
 			// Transfer the tokens to the new pool
 			Self::transfer_tokens_to_new_pool(
