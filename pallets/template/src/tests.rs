@@ -36,12 +36,15 @@ mod tests {
 
 	fn check_liquidity_taken(
 		user: AccountId,
-		assets: (u32, u32),
+		asset_pair: (u32, u32),
 		starting_balances: (u128, u128),
 		asset_amounts: (u128, u128),
 	) {
-		check_users_balance(user, assets.0, starting_balances.0 - asset_amounts.0);
-		check_users_balance(user, assets.1, starting_balances.1 - asset_amounts.1);
+		check_users_balance(user, asset_pair.0, starting_balances.0 - asset_amounts.0);
+		check_users_balance(user, asset_pair.1, starting_balances.1 - asset_amounts.1);
+		let pool_id = TemplateModule::get_pool_id(asset_pair);
+		check_users_balance(pool_id, asset_pair.0, asset_amounts.0);
+		check_users_balance(pool_id, asset_pair.1, asset_amounts.1);
 	}
 
 	#[test]
@@ -159,8 +162,6 @@ mod tests {
 				(MINTED_AMOUNT, MINTED_AMOUNT),
 				(ASSET1_AMOUNT, ASSET2_AMOUNT),
 			);
-
-			// TODO: assert that tokens are in the new pool
 		});
 	}
 }
