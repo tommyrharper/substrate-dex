@@ -207,6 +207,32 @@ pub mod pallet {
 
 			Ok(())
 		}
+
+        pub fn create_new_pool(
+            sender: &T::AccountId,
+			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
+			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
+        ) -> Result<(), DispatchError> {
+            // Initialize the new pool
+			let pool_id = Self::initialize_pool(asset_pair);
+
+			// Transfer the tokens to the new pool
+			Self::transfer_tokens_to_pool(
+				&sender,
+				&pool_id,
+				asset_pair,
+				asset_amounts,
+			)?;
+
+            // Send the lp tokens in exchange to the pool creator
+			Self::send_lp_tokens_to_pool_creator(
+				&sender,
+				&pool_id,
+				asset_amounts,
+			)?;
+
+			Ok(())
+		}
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -247,25 +273,14 @@ pub mod pallet {
 				(asset1_amount, asset2_amount),
             )?;
 
-            // Initialize the new pool
-			let pool_id = Self::initialize_pool((asset1, asset2));
-
-			// Transfer the tokens to the new pool
-			Self::transfer_tokens_to_pool(
-				&sender,
-				&pool_id,
+            // Create the new liquidity pool
+            Self::create_new_pool(
+                &sender,
 				(asset1, asset2),
 				(asset1_amount, asset2_amount),
-			)?;
+            )?;
 
-            // Send the lp tokens in exchange to the pool creator
-			Self::send_lp_tokens_to_pool_creator(
-				&sender,
-				&pool_id,
-				(asset1_amount, asset2_amount),
-			)?;
-
-			Ok(())
+            Ok(())
 		}
 
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
