@@ -14,6 +14,23 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
+// struct DexMath;
+
+// impl DexMath {
+// 	fn get_lp_tokens_for_new_pool(token_a_amount: u32, token_b_amount: u32) -> u32 {
+// 		// add sqrt
+// 		token_a_amount * token_b_amount
+// 	}
+
+// 	fn get_lp_tokens_for_existing_pool(
+// 		new_token_amount: u32,
+// 		current_token_amount: u32,
+// 		total_lp_token_supply: u32,
+// 	) -> u32 {
+// 		(new_token_amount / current_token_amount) * total_lp_token_supply
+// 	}
+// }
+
 #[frame_support::pallet]
 pub mod pallet {
 	use frame_support::{
@@ -23,7 +40,7 @@ pub mod pallet {
 		sp_runtime::traits::{AccountIdConversion, AtLeast32Bit, AtLeast32BitUnsigned},
 		traits::tokens::{
 			currency::Currency,
-			fungibles::{Inspect, Mutate, Transfer},
+			fungibles::{Create, Inspect, Mutate, Transfer},
 		},
 		Hashable,
 		PalletId,
@@ -45,7 +62,8 @@ pub mod pallet {
 
 		type MultiAssets: Inspect<Self::AccountId>
 			+ Transfer<Self::AccountId>
-			+ Mutate<Self::AccountId>;
+			+ Mutate<Self::AccountId>
+			+ Create<Self::AccountId>;
 
 		type Balances: Currency<Self::AccountId>;
 
@@ -131,48 +149,32 @@ pub mod pallet {
 			if Self::has_enough_tokens(asset_pair.0, asset_amounts.0, sender) &&
 				Self::has_enough_tokens(asset_pair.1, asset_amounts.1, sender)
 			{
-				return Ok(());
+				return Ok(())
 			}
 			Err(Error::<T>::NotEnoughTokensToStake.into())
 		}
 
-        pub fn get_pool_id(
-			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
-        ) -> T::AccountId{
-            let mut assets = vec![asset_pair.0, asset_pair.1];
+		pub fn get_pool_id(asset_pair: (AssetIdOf<T>, AssetIdOf<T>)) -> T::AccountId {
+			let mut assets = vec![asset_pair.0, asset_pair.1];
 			assets.sort();
 			let hashed_assets = assets.twox_128();
 			Self::sub_account_id(&hashed_assets)
-        }
+		}
 
-        pub fn initialize_pool(
-			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
-        ) -> T::AccountId{
+		pub fn initialize_pool(asset_pair: (AssetIdOf<T>, AssetIdOf<T>)) -> T::AccountId {
 			let pool_id = Self::get_pool_id(asset_pair);
 			T::Balances::make_free_balance_be(&pool_id, T::Balances::minimum_balance());
-            pool_id
-        }
+			pool_id
+		}
 
 		pub fn transfer_tokens_to_pool(
 			sender: &T::AccountId,
-            pool_id: &T::AccountId,
+			pool_id: &T::AccountId,
 			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 		) -> Result<(), DispatchError> {
-			T::MultiAssets::transfer(
-				asset_pair.0,
-				&sender,
-				&pool_id,
-				asset_amounts.0,
-				false,
-			)?;
-			T::MultiAssets::transfer(
-				asset_pair.1,
-				&sender,
-				&pool_id,
-				asset_amounts.1,
-				false,
-			)?;
+			T::MultiAssets::transfer(asset_pair.0, &sender, &pool_id, asset_amounts.0, false)?;
+			T::MultiAssets::transfer(asset_pair.1, &sender, &pool_id, asset_amounts.1, false)?;
 			Ok(())
 		}
 
@@ -182,12 +184,19 @@ pub mod pallet {
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 		) -> Result<(), DispatchError> {
 			let pool_id = Self::initialize_pool(asset_pair);
-            Self::transfer_tokens_to_pool(
-				sender,
-                &pool_id,
-				asset_pair,
-				asset_amounts,
-			)?;
+			Self::transfer_tokens_to_pool(sender, &pool_id, asset_pair, asset_amounts)?;
+			Ok(())
+		}
+
+		pub fn create_new_lp_tokens(
+			sender: &T::AccountId,
+			pool_id: &T::AccountId,
+			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
+            asset_id: AssetIdOf<T>,
+		) -> Result<(), DispatchError> {
+			// let asset_id = pool_id.twox_128();
+			T::MultiAssets::create(asset_id, Self::account_id(), true, asset_amounts.0)?;
+			T::MultiAssets::mint_into(asset_id, sender, asset_amounts.0)?;
 			Ok(())
 		}
 	}
@@ -228,11 +237,11 @@ pub mod pallet {
 			ensure!(asset1 != asset2, Error::<T>::ProvidedInvalidAssetIds);
 
 			// check if sender has enough tokens to stake
-            Self::has_enough_of_both_tokens(
-                &sender,
-                (asset1, asset2),
-                (asset1_amount, asset2_amount),
-            )?;
+			Self::has_enough_of_both_tokens(
+				&sender,
+				(asset1, asset2),
+				(asset1_amount, asset2_amount),
+			)?;
 
 			// Transfer the tokens to the new pool
 			Self::transfer_tokens_to_new_pool(
@@ -240,6 +249,9 @@ pub mod pallet {
 				(asset1, asset2),
 				(asset1_amount, asset2_amount),
 			)?;
+
+			// Assets::create(origin, asset, user, 1).expect("Asset creation failed");
+			// Assets::mint_into(asset, &user, amount).expect("Minting failed");
 
 			Ok(())
 		}
