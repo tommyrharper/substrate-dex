@@ -109,6 +109,7 @@ parameter_types! {
 impl pallet_template::Config for Test {
 	type Event = Event;
 	type MultiAssets = Assets;
+    type Balances = Balances;
     type PalletId = PoolPalletId;
 }
 

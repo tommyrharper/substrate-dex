@@ -53,9 +53,6 @@ pub mod pallet {
 		type Balances: Currency<Self::AccountId>;
 
 		#[pallet::constant]
-		type ExistentialDeposit: Get<<Self::Balances as Currency<Self::AccountId>>::Balance>;
-
-		#[pallet::constant]
 		type PalletId: Get<PalletId>;
 	}
 
@@ -180,8 +177,7 @@ pub mod pallet {
 			let hashed_assets = assets.twox_128();
 
 			let sub_account_id = Self::sub_account_id(&hashed_assets);
-			// let existential_deposit = ExistentialDeposit::get() as T::Balance;
-			T::Balances::make_free_balance_be(&sub_account_id, T::ExistentialDeposit::get());
+			T::Balances::make_free_balance_be(&sub_account_id, T::Balances::minimum_balance());
 
 			let res1 =
 				T::MultiAssets::transfer(asset1, &sender, &sub_account_id, asset1_amount, false);

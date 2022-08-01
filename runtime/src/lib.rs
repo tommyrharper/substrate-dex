@@ -302,7 +302,6 @@ impl pallet_template::Config for Runtime {
 	type Event = Event;
     type MultiAssets = Assets;
     type Balances = Balances;
-    type ExistentialDeposit = ExistentialDeposit;
 	type PalletId = PoolPalletId;
 }
 
