@@ -19,7 +19,7 @@ mod dex_math;
 #[frame_support::pallet]
 pub mod pallet {
 	use frame_support::{
-		dispatch::{fmt::Debug, Codec},
+		dispatch::{fmt::Debug, Codec, Encode, Decode},
 		// dispatch::fmt::Display,
 		pallet_prelude::*,
 		sp_runtime::traits::{AccountIdConversion, AtLeast32Bit, AtLeast32BitUnsigned},
@@ -33,6 +33,7 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 	use scale_info::prelude::vec;
     use crate::dex_math::*;
+    use sp_core::hexdisplay::HexDisplay;
 
 	type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
 	type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
@@ -174,6 +175,7 @@ pub mod pallet {
 		) -> Result<(), DispatchError> {
 			let pool_id = Self::initialize_pool(asset_pair);
 			Self::transfer_tokens_to_pool(sender, &pool_id, asset_pair, asset_amounts)?;
+            Self::create_new_lp_tokens(sender, &pool_id, asset_amounts);
 			Ok(())
 		}
 
@@ -182,15 +184,19 @@ pub mod pallet {
 			sender: &T::AccountId,
 			pool_id: &T::AccountId,
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
-			asset_id: AssetIdOf<T>,
+			// asset_id: AssetIdOf<T>,
 		) -> Result<(), DispatchError> {
-			let pool_id_hash = pool_id.twox_128();
+			let mut pool_id_hash = pool_id.twox_128();
             // modulus u32 max
             let lp_tokens_amount = get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
             let b: AssetIdOf<T> = 3u32.into();
-            // let b: AssetIdOf<T> = asset_id;
-			T::MultiAssets::create(3u32.into(), Self::account_id(), true, 0u32.into())?;
-			T::MultiAssets::mint_into(asset_id, sender, asset_amounts.0)?;
+
+            let res: u32 = Decode::decode(&mut &pool_id_hash[..]).unwrap();
+            let asset_id: AssetIdOf<T> = res.into();
+            // let c = HexDisplay::from(&pool_id_hash);
+            // let thing = HexDisplay::encode(&pool_id_hash);
+			T::MultiAssets::create(asset_id, Self::account_id(), true, 0u32.into())?;
+			T::MultiAssets::mint_into(asset_id, sender, lp_tokens_amount)?;
 			Ok(())
 		}
 	}
