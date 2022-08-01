@@ -55,8 +55,6 @@ pub mod pallet {
 
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
-
-        // type StartingAssetID: Get<AssetIdOf<Self>>;
 	}
 
 	#[pallet::pallet]
@@ -102,6 +100,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T>
 	where
 		<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
+		// <T::MultiAssets as Inspect<T::AccountId>>::AssetId: From<T::AccountId>,
 		// <T::MultiAssets as Inspect<T::AccountId>>::Balance: AtLeast32Bit,
 		// T::AccountId: AtLeast32Bit,
 	{
@@ -186,10 +185,11 @@ pub mod pallet {
 			asset_id: AssetIdOf<T>,
 		) -> Result<(), DispatchError> {
 			let pool_id_hash = pool_id.twox_128();
+            // modulus u32 max
             let lp_tokens_amount = get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
-            // let b: AssetIdOf<T> = 3u32.into();
+            let b: AssetIdOf<T> = 3u32.into();
             // let b: AssetIdOf<T> = asset_id;
-			// T::MultiAssets::create(b, Self::account_id(), true, 0u32.into())?;
+			T::MultiAssets::create(3u32.into(), Self::account_id(), true, 0u32.into())?;
 			T::MultiAssets::mint_into(asset_id, sender, asset_amounts.0)?;
 			Ok(())
 		}
