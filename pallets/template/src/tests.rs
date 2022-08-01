@@ -23,9 +23,25 @@ mod tests {
 		Assets::mint_into(asset, &user, amount).expect("Minting failed");
 	}
 
+	// TODO: update to use tuple
 	fn give_user_two_assets(user: AccountId, asset1: u32, asset2: u32, amount: u128) {
 		give_user_asset(user, asset1, amount);
 		give_user_asset(user, asset2, amount);
+	}
+
+	fn check_users_balance(user: AccountId, asset: u32, amount: u128) {
+		let asset_balance = Assets::balance(asset, &user);
+		assert!(asset_balance == amount);
+	}
+
+	fn check_liquidity_taken(
+		user: AccountId,
+		assets: (u32, u32),
+		starting_balances: (u128, u128),
+		asset_amounts: (u128, u128),
+	) {
+		check_users_balance(user, assets.0, starting_balances.0 - asset_amounts.0);
+		check_users_balance(user, assets.1, starting_balances.1 - asset_amounts.1);
 	}
 
 	#[test]
@@ -137,13 +153,14 @@ mod tests {
 				ASSET2_AMOUNT,
 			),);
 
-			let asset_balance = Assets::balance(ASSET1, &USER);
-			assert!(asset_balance == MINTED_AMOUNT - ASSET1_AMOUNT);
-			let asset_balance = Assets::balance(ASSET2, &USER);
-			assert!(asset_balance == MINTED_AMOUNT - ASSET2_AMOUNT);
-			let asset_balance = Assets::balance(ASSET2, &USER);
+			check_liquidity_taken(
+				USER,
+				(ASSET1, ASSET2),
+				(MINTED_AMOUNT, MINTED_AMOUNT),
+				(ASSET1_AMOUNT, ASSET2_AMOUNT),
+			);
 
-            // TODO: assert that tokens are in the new pool
+			// TODO: assert that tokens are in the new pool
 		});
 	}
 }
