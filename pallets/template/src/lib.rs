@@ -179,6 +179,7 @@ pub mod pallet {
 			let sub_account_id = Self::sub_account_id(&hashed_assets);
 			T::Balances::make_free_balance_be(&sub_account_id, T::Balances::minimum_balance());
 
+            // TODO handle potential errors
 			let res1 =
 				T::MultiAssets::transfer(asset1, &sender, &sub_account_id, asset1_amount, false);
 			// .expect("Deposit of liquidity for asset1 failed.");

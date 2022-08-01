@@ -129,28 +129,21 @@ mod tests {
 
 			let origin = Origin::signed(USER);
 
-			// assert_ok!(TemplateModule::create_pool(
-			// 	origin,
-			// 	ASSET1,
-			// 	ASSET2,
-			// 	ASSET1_AMOUNT,
-			// 	ASSET2_AMOUNT,
-			// ),);
+			assert_ok!(TemplateModule::create_pool(
+				origin,
+				ASSET1,
+				ASSET2,
+				ASSET1_AMOUNT,
+				ASSET2_AMOUNT,
+			),);
 
-			// let res1 = T::MultiAssets::transfer(
-			// 	asset1, // 1
-			// 	&sender, // 1
-			// 	&sub_account_id, // 1818521453
-			// 	asset1_amount, // 1000000
-			// 	false,
-			// );
-			// let origin = Origin::signed(USER);
-			// Balances::make_free_balance_be(&2, 100);
-			// // assert_ok!(Assets::transfer(origin, ASSET1, 1234, 1_000_000));
-			// assert_ok!(Assets::transfer(origin, ASSET1, 2, 1_000_000));
+			let asset_balance = Assets::balance(ASSET1, &USER);
+			assert!(asset_balance == MINTED_AMOUNT - ASSET1_AMOUNT);
+			let asset_balance = Assets::balance(ASSET2, &USER);
+			assert!(asset_balance == MINTED_AMOUNT - ASSET2_AMOUNT);
+			let asset_balance = Assets::balance(ASSET2, &USER);
 
-			// let asset_balance = Assets::balance(ASSET1, &USER);
-			// assert!(asset_balance == MINTED_AMOUNT - ASSET1_AMOUNT);
+            // TODO: assert that tokens are in the new pool
 		});
 	}
 }
