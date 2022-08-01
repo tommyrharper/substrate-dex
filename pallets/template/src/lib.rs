@@ -136,27 +136,40 @@ pub mod pallet {
 			Err(Error::<T>::NotEnoughTokensToStake.into())
 		}
 
+        pub fn get_pool_id(
+			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
+        ) -> T::AccountId{
+            let mut assets = vec![asset_pair.0, asset_pair.1];
+			assets.sort();
+			let hashed_assets = assets.twox_128();
+			Self::sub_account_id(&hashed_assets)
+        }
+
+        pub fn initialize_pool(
+			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
+        ) -> T::AccountId{
+			let pool_id = Self::get_pool_id(asset_pair);
+			T::Balances::make_free_balance_be(&pool_id, T::Balances::minimum_balance());
+            pool_id
+        }
+
 		pub fn transfer_tokens_to_new_pool(
 			sender: &T::AccountId,
 			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 		) -> Result<(), DispatchError> {
-			let mut assets = vec![asset_pair.0, asset_pair.1];
-			assets.sort();
-			let hashed_assets = assets.twox_128();
-			let sub_account_id = Self::sub_account_id(&hashed_assets);
-			T::Balances::make_free_balance_be(&sub_account_id, T::Balances::minimum_balance());
+			let pool_id = Self::initialize_pool(asset_pair);
 			T::MultiAssets::transfer(
 				asset_pair.0,
 				&sender,
-				&sub_account_id,
+				&pool_id,
 				asset_amounts.0,
 				false,
 			)?;
 			T::MultiAssets::transfer(
 				asset_pair.1,
 				&sender,
-				&sub_account_id,
+				&pool_id,
 				asset_amounts.1,
 				false,
 			)?;
