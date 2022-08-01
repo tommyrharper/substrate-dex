@@ -10,6 +10,7 @@ mod tests {
 
 	const USER: AccountId = 1u32;
 	const USER_2: AccountId = 2u32;
+    // TODO: updated to use ASSET_1 pattern and so on
 	const ASSET1: u32 = 1u32;
 	const ASSET2: u32 = 2u32;
 	const ASSET1_AMOUNT: u128 = 1_000_000;
@@ -47,7 +48,7 @@ mod tests {
 		check_users_balance(pool_id, asset_pair.1, asset_amounts.1);
 	}
 
-	fn check_lp_tokens_sent_to_provider(
+	fn check_lp_tokens_sent_to_pool_creator(
 		user: AccountId,
 		asset_pair: (u32, u32),
 		asset_amounts: (u128, u128),
@@ -55,6 +56,19 @@ mod tests {
 		let pool_id = TemplateModule::get_pool_id(asset_pair);
 		let lp_token_id = TemplateModule::get_lp_token_id(&pool_id);
 		let amount = get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
+		check_users_balance(user, lp_token_id, amount);
+	}
+
+	fn check_lp_tokens_sent_to_provider(
+		user: AccountId,
+		asset_pair: (u32, u32),
+        new_token_amount: u128,
+        current_token_amount: u128,
+        total_lp_token_supply: u128,
+	) {
+		let pool_id = TemplateModule::get_pool_id(asset_pair);
+		let lp_token_id = TemplateModule::get_lp_token_id(&pool_id);
+		let amount = get_lp_tokens_for_existing_pool(new_token_amount, current_token_amount, total_lp_token_supply).unwrap();
 		check_users_balance(user, lp_token_id, amount);
 	}
 
@@ -174,10 +188,52 @@ mod tests {
 				(ASSET1_AMOUNT, ASSET2_AMOUNT),
 			);
 
-			check_lp_tokens_sent_to_provider(
+			check_lp_tokens_sent_to_pool_creator(
 				USER,
 				(ASSET1, ASSET2),
 				(ASSET1_AMOUNT, ASSET2_AMOUNT),
+			);
+		});
+	}
+
+	#[test]
+	fn provide_liquidity() {
+		new_test_ext().execute_with(|| {
+			give_user_two_assets(USER, ASSET1, ASSET2, MINTED_AMOUNT);
+
+			let origin = Origin::signed(USER);
+
+			assert_ok!(TemplateModule::create_pool(
+				origin,
+				ASSET1,
+				ASSET2,
+				ASSET1_AMOUNT,
+				ASSET2_AMOUNT,
+			),);
+
+			let origin = Origin::signed(USER_2);
+
+			assert_ok!(TemplateModule::provide_liquidity(
+				origin,
+				ASSET1,
+				ASSET2,
+				ASSET1_AMOUNT,
+				ASSET2_AMOUNT,
+			),);
+
+            check_liquidity_taken(
+				USER_2,
+				(ASSET1, ASSET2),
+				(MINTED_AMOUNT, MINTED_AMOUNT),
+				(ASSET1_AMOUNT, ASSET2_AMOUNT),
+			);
+
+			check_lp_tokens_sent_to_provider(
+				USER_2,
+				(ASSET1, ASSET2),
+				ASSET1_AMOUNT,
+                ASSET1_AMOUNT,
+                ASSET1_AMOUNT,
 			);
 		});
 	}
