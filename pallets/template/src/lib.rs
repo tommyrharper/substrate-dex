@@ -91,8 +91,6 @@ pub mod pallet {
 		NotEnoughTokensToStake,
 		// The user did not provide valid asset ids
 		ProvidedInvalidAssetIds,
-        // Failed to transfer the users tokens to the pool
-        TransferToPoolFailed,
 	}
 
 	impl<T: Config> Pallet<T>
@@ -125,6 +123,7 @@ pub mod pallet {
 			asset_balance >= amount
 		}
 
+        // TODO: refactor to return result
 		pub fn has_enough_of_both_tokens(
 			sender: &T::AccountId,
 			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
@@ -181,8 +180,8 @@ pub mod pallet {
 
 		// Args AssetsPallet::Config::AssetId,
 		// DispatchResult {
-        // TODO: see if tuples are a practical input here
-        // TODO: update asset1 and 2 to a and b
+		// TODO: see if tuples are a practical input here
+		// TODO: update asset1 and 2 to a and b
 		pub fn create_pool(
 			origin: OriginFor<T>,
 			asset1: AssetIdOf<T>,
@@ -194,6 +193,7 @@ pub mod pallet {
 			let sender = ensure_signed(origin)?;
 
 			// Ensure that the assets are valid.
+            // TODO: refactor into method
 			ensure!(asset1 != asset2, Error::<T>::ProvidedInvalidAssetIds);
 
 			// check if sender has enough tokens to stake
@@ -206,14 +206,12 @@ pub mod pallet {
 				Error::<T>::NotEnoughTokensToStake
 			);
 
-            // Transfer the tokens to the new pool
-			let res = Self::transfer_tokens_to_new_pool(
+			// Transfer the tokens to the new pool
+			Self::transfer_tokens_to_new_pool(
 				&sender,
 				(asset1, asset2),
 				(asset1_amount, asset2_amount),
-			);
-
-			ensure!(res.is_ok(), Error::<T>::TransferToPoolFailed);
+			)?;
 
 			Ok(())
 		}
