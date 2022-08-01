@@ -6,7 +6,7 @@ use frame_support::{
 
 #[cfg(test)]
 mod tests {
-	use crate::tests::*;
+	use crate::{dex_math::*, tests::*};
 
 	const USER: AccountId = 1u32;
 	const USER_2: AccountId = 2u32;
@@ -50,11 +50,12 @@ mod tests {
 	fn check_lp_tokens_sent_to_provider(
 		user: AccountId,
 		asset_pair: (u32, u32),
-		amount: u128,
+		asset_amounts: (u128, u128),
 	) {
-        let pool_id = TemplateModule::get_pool_id(asset_pair);
-        let lp_token_id = TemplateModule::get_lp_token_id(&pool_id);
-        check_users_balance(user, lp_token_id, amount);
+		let pool_id = TemplateModule::get_pool_id(asset_pair);
+		let lp_token_id = TemplateModule::get_lp_token_id(&pool_id);
+		let amount = get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
+		check_users_balance(user, lp_token_id, amount);
 	}
 
 	#[test]
@@ -173,7 +174,11 @@ mod tests {
 				(ASSET1_AMOUNT, ASSET2_AMOUNT),
 			);
 
-            check_lp_tokens_sent_to_provider(USER, (ASSET1, ASSET2), ASSET1_AMOUNT);
+			check_lp_tokens_sent_to_provider(
+				USER,
+				(ASSET1, ASSET2),
+				(ASSET1_AMOUNT, ASSET2_AMOUNT),
+			);
 		});
 	}
 }
