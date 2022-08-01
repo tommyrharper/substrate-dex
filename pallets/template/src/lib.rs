@@ -19,12 +19,20 @@ pub mod pallet {
 	use frame_support::{
 		// dispatch::fmt::Display,
 		pallet_prelude::*,
-		sp_runtime::traits::{AccountIdConversion, AtLeast32Bit},
-		traits::tokens::fungibles::{Inspect, Mutate, Transfer},
-		Hashable, PalletId,
+		sp_runtime::traits::{AccountIdConversion, AtLeast32Bit, AtLeast32BitUnsigned},
+        dispatch::{
+            Codec,
+            fmt::Debug,
+        },
+        traits::tokens::{
+            currency::Currency,
+            fungibles::{Inspect, Mutate, Transfer},
+        },
+		Hashable,
+		PalletId,
 	};
 	use frame_system::pallet_prelude::*;
-    use scale_info::prelude::vec;
+	use scale_info::prelude::vec;
 
 	type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
 	type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
@@ -41,6 +49,11 @@ pub mod pallet {
 		type MultiAssets: Inspect<Self::AccountId>
 			+ Transfer<Self::AccountId>
 			+ Mutate<Self::AccountId>;
+
+		type Balances: Currency<Self::AccountId>;
+
+		#[pallet::constant]
+		type ExistentialDeposit: Get<<Self::Balances as Currency<Self::AccountId>>::Balance>;
 
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
@@ -101,18 +114,23 @@ pub mod pallet {
 			T::MultiAssets::balance(asset_id, &Self::sub_account_id(sub))
 		}
 
-        pub fn has_enough_tokens(asset: AssetIdOf<T>, amount: BalanceOf<T>, sender: &T::AccountId) -> bool {
-            let asset_balance = T::MultiAssets::balance(asset, &sender);
-            asset_balance >= amount
-        }
+		pub fn has_enough_tokens(
+			asset: AssetIdOf<T>,
+			amount: BalanceOf<T>,
+			sender: &T::AccountId,
+		) -> bool {
+			let asset_balance = T::MultiAssets::balance(asset, &sender);
+			asset_balance >= amount
+		}
 
-        pub fn has_enough_of_both_tokens(
-            sender: &T::AccountId,
-            assets: (AssetIdOf<T>, AssetIdOf<T>),
-            asset_amounts: (BalanceOf<T>, BalanceOf<T>),
-        ) -> bool {
-            Self::has_enough_tokens(assets.0, asset_amounts.0, sender) && Self::has_enough_tokens(assets.1, asset_amounts.1, sender)
-        }
+		pub fn has_enough_of_both_tokens(
+			sender: &T::AccountId,
+			assets: (AssetIdOf<T>, AssetIdOf<T>),
+			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
+		) -> bool {
+			Self::has_enough_tokens(assets.0, asset_amounts.0, sender) &&
+				Self::has_enough_tokens(assets.1, asset_amounts.1, sender)
+		}
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -146,39 +164,30 @@ pub mod pallet {
 
 			ensure!(asset1 != asset2, Error::<T>::ProvidedInvalidAssetIds);
 
-            // check if sender has enough tokens to stake
-            ensure!(
-                Self::has_enough_of_both_tokens(
-                    &sender,
-                    (asset1, asset2),
-                    (asset1_amount, asset2_amount),
-                ),
-                Error::<T>::NotEnoughTokensToStake
-            );
-
-            let mut assets = vec![asset1, asset2];
-            assets.sort();
-
-            let hashed_assets = assets.twox_128();
-
-            let sub_account_id = Self::sub_account_id(&hashed_assets);
-            // T::MultiAssets::make_free_balance_be(&sub_account_id, 0);
-
-			let res1 = T::MultiAssets::transfer(
-				asset1,
-				&sender,
-				&sub_account_id,
-				asset1_amount,
-				false,
+			// check if sender has enough tokens to stake
+			ensure!(
+				Self::has_enough_of_both_tokens(
+					&sender,
+					(asset1, asset2),
+					(asset1_amount, asset2_amount),
+				),
+				Error::<T>::NotEnoughTokensToStake
 			);
+
+			let mut assets = vec![asset1, asset2];
+			assets.sort();
+
+			let hashed_assets = assets.twox_128();
+
+			let sub_account_id = Self::sub_account_id(&hashed_assets);
+			// let existential_deposit = ExistentialDeposit::get() as T::Balance;
+			T::Balances::make_free_balance_be(&sub_account_id, T::ExistentialDeposit::get());
+
+			let res1 =
+				T::MultiAssets::transfer(asset1, &sender, &sub_account_id, asset1_amount, false);
 			// .expect("Deposit of liquidity for asset1 failed.");
-			let res2 = T::MultiAssets::transfer(
-				asset2,
-				&sender,
-				&sub_account_id,
-				asset2_amount,
-				false,
-			);
+			let res2 =
+				T::MultiAssets::transfer(asset2, &sender, &sub_account_id, asset2_amount, false);
 			// .expect("Deposit of liquidity for asset2 failed.");
 
 			Ok(())

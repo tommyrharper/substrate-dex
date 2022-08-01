@@ -6,9 +6,7 @@ use frame_support::{
 
 #[cfg(test)]
 mod tests {
-	use sp_runtime::TokenError;
-
-use crate::tests::*;
+	use crate::tests::*;
 
 	const USER: AccountId = 1u32;
 	const USER_2: AccountId = 2u32;
@@ -118,9 +116,9 @@ use crate::tests::*;
 	fn can_transfer_assets() {
 		new_test_ext().execute_with(|| {
 			give_user_two_assets(USER, ASSET1, ASSET2, MINTED_AMOUNT);
-            Balances::make_free_balance_be(&USER_2, ExistentialDeposit::get());
+			Balances::make_free_balance_be(&USER_2, ExistentialDeposit::get());
 			let origin = Origin::signed(USER);
-            assert_ok!(Assets::transfer(origin, ASSET1, USER_2, ASSET1_AMOUNT));
+			assert_ok!(Assets::transfer(origin, ASSET1, USER_2, ASSET1_AMOUNT));
 		});
 	}
 
@@ -131,8 +129,6 @@ use crate::tests::*;
 
 			let origin = Origin::signed(USER);
 
-
-
 			// assert_ok!(TemplateModule::create_pool(
 			// 	origin,
 			// 	ASSET1,
@@ -140,8 +136,6 @@ use crate::tests::*;
 			// 	ASSET1_AMOUNT,
 			// 	ASSET2_AMOUNT,
 			// ),);
-
-
 
 			// let res1 = T::MultiAssets::transfer(
 			// 	asset1, // 1

@@ -236,6 +236,10 @@ impl pallet_timestamp::Config for Runtime {
 	type WeightInfo = ();
 }
 
+parameter_types! {
+	pub const ExistentialDeposit: u128 = 10;
+}
+
 impl pallet_balances::Config for Runtime {
 	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ();
@@ -245,7 +249,7 @@ impl pallet_balances::Config for Runtime {
 	/// The ubiquitous event type.
 	type Event = Event;
 	type DustRemoval = ();
-	type ExistentialDeposit = ConstU128<500>;
+	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
@@ -297,6 +301,8 @@ parameter_types! {
 impl pallet_template::Config for Runtime {
 	type Event = Event;
     type MultiAssets = Assets;
+    type Balances = Balances;
+    type ExistentialDeposit = ExistentialDeposit;
 	type PalletId = PoolPalletId;
 }
 
