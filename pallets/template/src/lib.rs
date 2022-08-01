@@ -188,6 +188,25 @@ pub mod pallet {
 			T::MultiAssets::mint_into(asset_id, sender, lp_tokens_amount)?;
 			Ok(())
 		}
+
+        pub fn check_create_pool_input_is_valid(
+            sender: &T::AccountId,
+			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
+			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
+        ) -> Result<(), DispatchError> {
+			// Ensure that the assets are valid.
+			// TODO: refactor into method
+			ensure!(asset_pair.0 != asset_pair.1, Error::<T>::ProvidedInvalidAssetIds);
+
+			// check if sender has enough tokens to stake
+			Self::has_enough_of_both_tokens(
+				&sender,
+				asset_pair,
+				asset_amounts,
+			)?;
+
+			Ok(())
+		}
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -221,17 +240,14 @@ pub mod pallet {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
 
-			// Ensure that the assets are valid.
-			// TODO: refactor into method
-			ensure!(asset1 != asset2, Error::<T>::ProvidedInvalidAssetIds);
-
-			// check if sender has enough tokens to stake
-			Self::has_enough_of_both_tokens(
-				&sender,
+            // Check the user input is valid
+            Self::check_create_pool_input_is_valid(
+                &sender,
 				(asset1, asset2),
 				(asset1_amount, asset2_amount),
-			)?;
+            )?;
 
+            // Initialize the new pool
 			let pool_id = Self::initialize_pool((asset1, asset2));
 
 			// Transfer the tokens to the new pool
@@ -242,6 +258,7 @@ pub mod pallet {
 				(asset1_amount, asset2_amount),
 			)?;
 
+            // Send the lp tokens in exchange to the pool creator
 			Self::send_lp_tokens_to_pool_creator(
 				&sender,
 				&pool_id,
