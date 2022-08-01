@@ -162,6 +162,7 @@ pub mod pallet {
             let hashed_assets = assets.twox_128();
 
             let sub_account_id = Self::sub_account_id(&hashed_assets);
+            // T::MultiAssets::make_free_balance_be(&sub_account_id, 0);
 
 			let res1 = T::MultiAssets::transfer(
 				asset1,

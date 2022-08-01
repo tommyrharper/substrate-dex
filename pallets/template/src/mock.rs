@@ -59,6 +59,10 @@ impl system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
+parameter_types! {
+	pub const ExistentialDeposit: u128 = 10;
+}
+
 impl pallet_balances::Config for Test {
 	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ();
@@ -68,7 +72,7 @@ impl pallet_balances::Config for Test {
 	/// The ubiquitous event type.
 	type Event = Event;
 	type DustRemoval = ();
-	type ExistentialDeposit = ConstU128<500>;
+	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Test>;
 }
@@ -80,7 +84,7 @@ impl pallet_assets::Config for Test {
 	type Currency = Balances;
 	type ForceOrigin = EnsureRoot<AccountId>;
 	type AssetDeposit = AssetDeposit;
-	type AssetAccountDeposit = ConstU128<1_000_000>;
+	type AssetAccountDeposit = ConstU128<1>;
 	type MetadataDepositBase = MetadataDepositBase;
 	type MetadataDepositPerByte = MetadataDepositPerByte;
 	type ApprovalDeposit = ApprovalDeposit;
@@ -91,10 +95,10 @@ impl pallet_assets::Config for Test {
 }
 
 parameter_types! {
-	pub const AssetDeposit: Balance = 100_000;
-	pub const MetadataDepositBase: Balance = 10_000;
-	pub const MetadataDepositPerByte: Balance = 1_000;
-	pub const ApprovalDeposit: Balance = 1_000;
+	pub const AssetDeposit: Balance = 1;
+	pub const MetadataDepositBase: Balance = 1;
+	pub const MetadataDepositPerByte: Balance = 1;
+	pub const ApprovalDeposit: Balance = 1;
 	pub const StringLimit: u32 = 50;
 }
 
