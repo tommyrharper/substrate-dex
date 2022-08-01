@@ -134,7 +134,7 @@ pub mod pallet {
 
 		// Args AssetsPallet::Config::AssetId,
 		// DispatchResult {
-		pub fn provide_liquidity(
+		pub fn create_pool(
 			origin: OriginFor<T>,
 			asset1: AssetIdOf<T>,
 			asset2: AssetIdOf<T>,

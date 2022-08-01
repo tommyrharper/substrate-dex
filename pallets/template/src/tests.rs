@@ -46,11 +46,11 @@ mod tests {
 	}
 
 	#[test]
-	fn provide_liquidity_without_any_tokens() {
+	fn create_pool_without_any_tokens() {
 		new_test_ext().execute_with(|| {
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::provide_liquidity(
+				TemplateModule::create_pool(
 					origin,
 					ASSET1,
 					ASSET2,
@@ -63,13 +63,13 @@ mod tests {
 	}
 
 	#[test]
-	fn provide_liquidity_without_first_token() {
+	fn create_pool_without_first_token() {
 		new_test_ext().execute_with(|| {
 			give_user_asset(USER, ASSET2, MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::provide_liquidity(
+				TemplateModule::create_pool(
 					origin,
 					ASSET1,
 					ASSET2,
@@ -82,13 +82,13 @@ mod tests {
 	}
 
 	#[test]
-	fn provide_liquidity_without_second_token() {
+	fn create_pool_without_second_token() {
 		new_test_ext().execute_with(|| {
 			give_user_asset(USER, ASSET1, MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::provide_liquidity(
+				TemplateModule::create_pool(
 					origin,
 					ASSET1,
 					ASSET2,
@@ -101,12 +101,12 @@ mod tests {
 	}
 
 	#[test]
-	fn provide_liquidity() {
+	fn create_pool() {
 		new_test_ext().execute_with(|| {
 			give_user_two_assets(USER, ASSET1, ASSET2, MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
-			assert_ok!(TemplateModule::provide_liquidity(
+			assert_ok!(TemplateModule::create_pool(
 				origin,
 				ASSET1,
 				ASSET2,
@@ -117,13 +117,13 @@ mod tests {
 	}
 
 	#[test]
-	fn provide_liquidity_same_asset_ids() {
+	fn create_pool_same_asset_ids() {
 		new_test_ext().execute_with(|| {
 			give_user_two_assets(USER, ASSET1, ASSET2, MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::provide_liquidity(
+				TemplateModule::create_pool(
 					origin,
 					ASSET1,
 					ASSET1,
