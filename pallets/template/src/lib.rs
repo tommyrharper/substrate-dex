@@ -153,12 +153,12 @@ pub mod pallet {
             pool_id
         }
 
-		pub fn transfer_tokens_to_new_pool(
+		pub fn transfer_tokens_to_pool(
 			sender: &T::AccountId,
+            pool_id: &T::AccountId,
 			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 		) -> Result<(), DispatchError> {
-			let pool_id = Self::initialize_pool(asset_pair);
 			T::MultiAssets::transfer(
 				asset_pair.0,
 				&sender,
@@ -172,6 +172,21 @@ pub mod pallet {
 				&pool_id,
 				asset_amounts.1,
 				false,
+			)?;
+			Ok(())
+		}
+
+		pub fn transfer_tokens_to_new_pool(
+			sender: &T::AccountId,
+			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
+			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
+		) -> Result<(), DispatchError> {
+			let pool_id = Self::initialize_pool(asset_pair);
+            Self::transfer_tokens_to_pool(
+				sender,
+                &pool_id,
+				asset_pair,
+				asset_amounts,
 			)?;
 			Ok(())
 		}
