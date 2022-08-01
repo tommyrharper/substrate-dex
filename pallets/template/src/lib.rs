@@ -17,17 +17,14 @@ mod benchmarking;
 #[frame_support::pallet]
 pub mod pallet {
 	use frame_support::{
+		dispatch::{fmt::Debug, Codec},
 		// dispatch::fmt::Display,
 		pallet_prelude::*,
 		sp_runtime::traits::{AccountIdConversion, AtLeast32Bit, AtLeast32BitUnsigned},
-        dispatch::{
-            Codec,
-            fmt::Debug,
-        },
-        traits::tokens::{
-            currency::Currency,
-            fungibles::{Inspect, Mutate, Transfer},
-        },
+		traits::tokens::{
+			currency::Currency,
+			fungibles::{Inspect, Mutate, Transfer},
+		},
 		Hashable,
 		PalletId,
 	};
@@ -90,11 +87,19 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		// The user tried to stake more tokens than they have
 		NotEnoughTokensToStake,
+		// The user did not provide valid asset ids
 		ProvidedInvalidAssetIds,
+        // Failed to transfer the users tokens to the pool
+        TransferToPoolFailed,
 	}
 
-	impl<T: Config> Pallet<T> {
+	impl<T: Config> Pallet<T>
+	where
+		<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
+	{
+		// TODO: check which of these functions need to be published
 		pub fn account_id() -> T::AccountId {
 			T::PalletId::get().into_account_truncating()
 		}
@@ -122,11 +127,38 @@ pub mod pallet {
 
 		pub fn has_enough_of_both_tokens(
 			sender: &T::AccountId,
-			assets: (AssetIdOf<T>, AssetIdOf<T>),
+			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 		) -> bool {
-			Self::has_enough_tokens(assets.0, asset_amounts.0, sender) &&
-				Self::has_enough_tokens(assets.1, asset_amounts.1, sender)
+			Self::has_enough_tokens(asset_pair.0, asset_amounts.0, sender) &&
+				Self::has_enough_tokens(asset_pair.1, asset_amounts.1, sender)
+		}
+
+		pub fn transfer_tokens_to_new_pool(
+			sender: &T::AccountId,
+			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
+			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
+		) -> Result<(), DispatchError> {
+			let mut assets = vec![asset_pair.0, asset_pair.1];
+			assets.sort();
+			let hashed_assets = assets.twox_128();
+			let sub_account_id = Self::sub_account_id(&hashed_assets);
+			T::Balances::make_free_balance_be(&sub_account_id, T::Balances::minimum_balance());
+			T::MultiAssets::transfer(
+				asset_pair.0,
+				&sender,
+				&sub_account_id,
+				asset_amounts.0,
+				false,
+			)?;
+			T::MultiAssets::transfer(
+				asset_pair.1,
+				&sender,
+				&sub_account_id,
+				asset_amounts.1,
+				false,
+			)?;
+			Ok(())
 		}
 	}
 
@@ -137,7 +169,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T>
 	where
 		<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
-		<T::MultiAssets as Inspect<T::AccountId>>::AssetId: Encode,
+		<T::MultiAssets as Inspect<T::AccountId>>::AssetId: Codec,
 		/* where <T::MultiAssets
 		 * as Inspect<T::AccountId>>::AssetId:
 		 * AtLeast32Bit,
@@ -149,6 +181,8 @@ pub mod pallet {
 
 		// Args AssetsPallet::Config::AssetId,
 		// DispatchResult {
+        // TODO: see if tuples are a practical input here
+        // TODO: update asset1 and 2 to a and b
 		pub fn create_pool(
 			origin: OriginFor<T>,
 			asset1: AssetIdOf<T>,
@@ -159,6 +193,7 @@ pub mod pallet {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
 
+			// Ensure that the assets are valid.
 			ensure!(asset1 != asset2, Error::<T>::ProvidedInvalidAssetIds);
 
 			// check if sender has enough tokens to stake
@@ -171,21 +206,14 @@ pub mod pallet {
 				Error::<T>::NotEnoughTokensToStake
 			);
 
-			let mut assets = vec![asset1, asset2];
-			assets.sort();
+            // Transfer the tokens to the new pool
+			let res = Self::transfer_tokens_to_new_pool(
+				&sender,
+				(asset1, asset2),
+				(asset1_amount, asset2_amount),
+			);
 
-			let hashed_assets = assets.twox_128();
-
-			let sub_account_id = Self::sub_account_id(&hashed_assets);
-			T::Balances::make_free_balance_be(&sub_account_id, T::Balances::minimum_balance());
-
-            // TODO handle potential errors
-			let res1 =
-				T::MultiAssets::transfer(asset1, &sender, &sub_account_id, asset1_amount, false);
-			// .expect("Deposit of liquidity for asset1 failed.");
-			let res2 =
-				T::MultiAssets::transfer(asset2, &sender, &sub_account_id, asset2_amount, false);
-			// .expect("Deposit of liquidity for asset2 failed.");
+			ensure!(res.is_ok(), Error::<T>::TransferToPoolFailed);
 
 			Ok(())
 		}
