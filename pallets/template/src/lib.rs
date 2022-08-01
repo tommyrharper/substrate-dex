@@ -18,8 +18,9 @@ mod dex_math;
 
 #[frame_support::pallet]
 pub mod pallet {
+	use crate::dex_math::*;
 	use frame_support::{
-		dispatch::{fmt::Debug, Codec, Encode, Decode},
+		dispatch::{fmt::Debug, Codec, Decode, Encode},
 		// dispatch::fmt::Display,
 		pallet_prelude::*,
 		sp_runtime::traits::{AccountIdConversion, AtLeast32Bit, AtLeast32BitUnsigned},
@@ -32,7 +33,6 @@ pub mod pallet {
 	};
 	use frame_system::pallet_prelude::*;
 	use scale_info::prelude::vec;
-    use crate::dex_math::*;
 
 	type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
 	type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
@@ -51,7 +51,7 @@ pub mod pallet {
 			+ Mutate<Self::AccountId>
 			+ Create<Self::AccountId>;
 
-        type Balances: Currency<Self::AccountId>;
+		type Balances: Currency<Self::AccountId>;
 
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
@@ -167,24 +167,23 @@ pub mod pallet {
 			Ok(())
 		}
 
-        pub fn get_lp_token_id(
-            pool_id: &T::AccountId
-        ) -> AssetIdOf<T> {
+		pub fn get_lp_token_id(pool_id: &T::AccountId) -> AssetIdOf<T> {
 			let pool_id_hash = pool_id.twox_128();
-            // TODO: remove unwrap
-            let pool_id_hash_number: u32 = Decode::decode(&mut &pool_id_hash[..]).unwrap();
-            let asset_id: AssetIdOf<T> = pool_id_hash_number.into();
-            asset_id
-        }
+			// TODO: remove unwrap
+			let pool_id_hash_number: u32 = Decode::decode(&mut &pool_id_hash[..]).unwrap();
+			let asset_id: AssetIdOf<T> = pool_id_hash_number.into();
+			asset_id
+		}
 
-        // TODO: get rid of unwraps
+		// TODO: get rid of unwraps
 		pub fn send_lp_tokens_to_pool_creator(
 			sender: &T::AccountId,
 			pool_id: &T::AccountId,
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 		) -> Result<(), DispatchError> {
-            let lp_tokens_amount = get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
-            let asset_id: AssetIdOf<T> = Self::get_lp_token_id(pool_id);
+			let lp_tokens_amount =
+				get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
+			let asset_id: AssetIdOf<T> = Self::get_lp_token_id(pool_id);
 			T::MultiAssets::create(asset_id, Self::account_id(), true, 1u32.into())?;
 			T::MultiAssets::mint_into(asset_id, sender, lp_tokens_amount)?;
 			Ok(())
@@ -238,12 +237,16 @@ pub mod pallet {
 			// Transfer the tokens to the new pool
 			Self::transfer_tokens_to_pool(
 				&sender,
-                &pool_id,
+				&pool_id,
 				(asset1, asset2),
 				(asset1_amount, asset2_amount),
 			)?;
 
-            Self::send_lp_tokens_to_pool_creator(&sender, &pool_id, (asset1_amount, asset2_amount))?;
+			Self::send_lp_tokens_to_pool_creator(
+				&sender,
+				&pool_id,
+				(asset1_amount, asset2_amount),
+			)?;
 
 			Ok(())
 		}
