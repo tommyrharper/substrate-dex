@@ -39,7 +39,9 @@ pub fn get_token_b_amount<T: AtLeast32Bit + CheckedDiv + CheckedMul>(
 // TODO: extract to config variable
 /// divide by 1_000 to get decimal percentage
 /// E.g. 1 = 0.1% as 1 / 1_000 = 0.001 = 0.1%
-const SWAP_FEE_PERCENTAGE: u32 = 1;
+/// E.g. 10 = 1% as 10 / 1_000 = 0.01 = 1%
+/// E.g. 100 = 10% as 100 / 1_000 = 0.1 = 10%
+const SWAP_FEE_PERCENTAGE: u32 = 100;
 const SWAP_FEE_PERCENTAGE_DIVISOR: u32 = 1_000;
 
 pub fn get_swap_return<T: AtLeast32Bit + CheckedDiv + CheckedMul + CheckedAdd + CheckedSub, Config>(
@@ -48,15 +50,15 @@ pub fn get_swap_return<T: AtLeast32Bit + CheckedDiv + CheckedMul + CheckedAdd + 
 ) -> Result<T, Error<Config>> {
     let swap_fee_percentage: T = SWAP_FEE_PERCENTAGE.into();
     let swap_fee_percentage_divisor: T = SWAP_FEE_PERCENTAGE_DIVISOR.into();
-    let hundred_percent: T = 1u32.into();
+    let returned_fee_percentage_multiplier: T = swap_fee_percentage_divisor.checked_sub(&swap_fee_percentage).ok_or(Error::<Config>::MathOverflow)?;
 
 	let constant_product = liquidity_amounts.0.checked_mul(&liquidity_amounts.1).ok_or(Error::<Config>::MathOverflow)?;
 	let new_token_a_liquidity = liquidity_amounts.0.checked_add(&token_a_amount).ok_or(Error::<Config>::MathOverflow)?;
     let new_token_b_liquidity = constant_product.checked_div(&new_token_a_liquidity).ok_or(Error::<Config>::MathOverflow)?;
     let total_b_decrease = liquidity_amounts.1.checked_sub(&new_token_b_liquidity).ok_or(Error::<Config>::MathOverflow)?;
-    let fee_percentage = swap_fee_percentage.checked_div(&swap_fee_percentage_divisor).ok_or(Error::<Config>::MathOverflow)?;
-    let percent_of_tokens_returned = hundred_percent.checked_sub(&fee_percentage).ok_or(Error::<Config>::MathOverflow)?;
-    let returned_token_b_amount = total_b_decrease.checked_mul(&percent_of_tokens_returned).ok_or(Error::<Config>::MathOverflow)?;
 
-    Ok(returned_token_b_amount)
+    let returned_large_amount = total_b_decrease.checked_mul(&returned_fee_percentage_multiplier).ok_or(Error::<Config>::MathOverflow)?;
+    let returned_token_b_amount_minus_fee = returned_large_amount.checked_div(&swap_fee_percentage_divisor).ok_or(Error::<Config>::MathOverflow)?;
+
+    Ok(returned_token_b_amount_minus_fee)
 }

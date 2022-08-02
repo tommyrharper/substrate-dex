@@ -1,6 +1,5 @@
-use crate::{mock::*, Error};
+use crate::{dex_math::*, mock::*, test_utils::*, Error};
 use frame_support::{assert_noop, assert_ok, traits::Currency};
-use crate::{dex_math::*, test_utils::*};
 
 const USER: AccountId = 1u32;
 const USER_2: AccountId = 2u32;
@@ -200,21 +199,37 @@ mod swap_tests {
 	use super::*;
 
 	#[test]
-	fn swap() {
+	fn test_swap() {
 		new_test_ext().execute_with(|| {
 			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
-			give_user_two_assets(USER_2, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+			give_user_asset(USER_2, ASSET_A, MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER_2);
 
 			assert_ok!(DexModule::swap(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT),);
 
-			let expected_return = get_swap_return::<u128, Test>(ASSET_A as u128, (ASSET_A_AMOUNT, ASSET_B_AMOUNT)).unwrap();
+			let expected_return =
+				get_swap_return::<u128, Test>(ASSET_A_AMOUNT, (ASSET_A_AMOUNT, ASSET_B_AMOUNT))
+					.unwrap();
 
 			check_users_balance(USER_2, ASSET_A, MINTED_AMOUNT - ASSET_A_AMOUNT);
 			check_users_balance(USER_2, ASSET_B, expected_return);
 			let pool_id = DexModule::get_pool_id((ASSET_A, ASSET_B));
 			check_users_balance(pool_id, ASSET_A, ASSET_A_AMOUNT + ASSET_A_AMOUNT);
+		});
+	}
+}
+
+#[cfg(test)]
+mod dex_math_tests {
+	use super::*;
+
+	#[test]
+	fn test_get_swap_return() {
+		new_test_ext().execute_with(|| {
+			let expected_return = get_swap_return::<u128, Test>(50u128, (50u128, 100u128)).unwrap();
+
+			assert_eq!(expected_return, 45);
 		});
 	}
 }
