@@ -23,3 +23,15 @@ pub fn get_lp_tokens_for_existing_pool<T: AtLeast32Bit + CheckedDiv + CheckedMul
         None => None,
     }
 }
+
+pub fn get_token_b_amount<T: AtLeast32Bit + CheckedDiv + CheckedMul>(
+	token_a_amount: T,
+	liquidity_a: T,
+	liquidity_b: T,
+) -> Option<T> {
+    let liquidity_ratio = liquidity_a.checked_div(&liquidity_b);
+    match liquidity_ratio {
+        Some(liquidity_ratio) => token_a_amount.checked_div(&liquidity_ratio),
+        None => None,
+    }
+}

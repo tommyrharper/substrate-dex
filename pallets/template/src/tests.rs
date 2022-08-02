@@ -218,7 +218,6 @@ mod tests {
 				ASSET1,
 				ASSET2,
 				ASSET1_AMOUNT,
-				ASSET2_AMOUNT,
 			),);
 
             check_liquidity_taken(

@@ -196,82 +196,89 @@ pub mod pallet {
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 		) -> Result<(), DispatchError> {
 			// let lp_tokens_amount =
-            // get_lp_tokens_for_existing_pool(asset_amounts.0, asset_amounts.1).unwrap();
+			// get_lp_tokens_for_existing_pool(asset_amounts.0, asset_amounts.1).unwrap();
 			// let asset_id: AssetIdOf<T> = Self::get_lp_token_id(pool_id);
 			// T::MultiAssets::create(asset_id, Self::account_id(), true, 1u32.into())?;
 			// T::MultiAssets::mint_into(asset_id, sender, lp_tokens_amount)?;
 			Ok(())
 		}
 
-        pub fn check_create_pool_input_is_valid(
-            sender: &T::AccountId,
+		pub fn check_create_pool_input_is_valid(
+			sender: &T::AccountId,
 			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
-        ) -> Result<(), DispatchError> {
+		) -> Result<(), DispatchError> {
 			// Ensure that the assets are valid.
 			// TODO: refactor into method
 			ensure!(asset_pair.0 != asset_pair.1, Error::<T>::ProvidedInvalidAssetIds);
 
 			// check if sender has enough tokens to stake
-			Self::has_enough_of_both_tokens(
-				&sender,
-				asset_pair,
-				asset_amounts,
-			)?;
+			Self::has_enough_of_both_tokens(&sender, asset_pair, asset_amounts)?;
 
 			Ok(())
 		}
 
-        pub fn create_new_pool(
-            sender: &T::AccountId,
+		pub fn check_provide_liquidity_input_is_valid(
+			sender: &T::AccountId,
 			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
-        ) -> Result<(), DispatchError> {
-            // Initialize the new pool
+		) -> Result<(), DispatchError> {
+			// Ensure that the assets are valid.
+			ensure!(asset_pair.0 != asset_pair.1, Error::<T>::ProvidedInvalidAssetIds);
+
+			// check if sender has enough tokens to stake
+			Self::has_enough_of_both_tokens(&sender, asset_pair, asset_amounts)?;
+
+			Ok(())
+		}
+
+		pub fn create_new_pool(
+			sender: &T::AccountId,
+			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
+			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
+		) -> Result<(), DispatchError> {
+			// Initialize the new pool
 			let pool_id = Self::initialize_pool(asset_pair);
 
 			// Transfer the tokens to the new pool
-			Self::transfer_tokens_to_pool(
-				&sender,
-				&pool_id,
-				asset_pair,
-				asset_amounts,
-			)?;
+			Self::transfer_tokens_to_pool(&sender, &pool_id, asset_pair, asset_amounts)?;
 
-            // Send the lp tokens in exchange to the pool creator
-			Self::send_lp_tokens_to_pool_creator(
-				&sender,
-				&pool_id,
-				asset_amounts,
-			)?;
+			// Send the lp tokens in exchange to the pool creator
+			Self::send_lp_tokens_to_pool_creator(&sender, &pool_id, asset_amounts)?;
 
 			Ok(())
 		}
 
-        pub fn top_up_liquidity_pool(
-            sender: &T::AccountId,
+		pub fn top_up_liquidity_pool(
+			sender: &T::AccountId,
 			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 			asset_amounts: (BalanceOf<T>, BalanceOf<T>),
-        ) -> Result<(), DispatchError> {
-            // Initialize the new pool
+		) -> Result<(), DispatchError> {
+			// Initialize the new pool
 			let pool_id = Self::get_pool_id(asset_pair);
 
 			// Transfer the tokens to the new pool
-			Self::transfer_tokens_to_pool(
-				&sender,
-				&pool_id,
-				asset_pair,
-				asset_amounts,
-			)?;
+			Self::transfer_tokens_to_pool(&sender, &pool_id, asset_pair, asset_amounts)?;
 
-            // Send the lp tokens in exchange to the pool creator
-			Self::send_lp_tokens_to_pool_contributor(
-				&sender,
-				&pool_id,
-				asset_amounts,
-			)?;
+			// Send the lp tokens in exchange to the pool creator
+			Self::send_lp_tokens_to_pool_contributor(&sender, &pool_id, asset_amounts)?;
 
 			Ok(())
+		}
+
+		pub fn derive_second_asset_amount(
+			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
+			asset1_amount: BalanceOf<T>,
+		) -> Result<BalanceOf<T>, DispatchError> {
+			// Initialize the new pool
+			let pool_id = Self::get_pool_id(asset_pair);
+			let token_1_liquidity = T::MultiAssets::balance(asset_pair.0, &pool_id);
+			let token_2_liquidity = T::MultiAssets::balance(asset_pair.1, &pool_id);
+
+			let second_asset_amount =
+				get_token_b_amount(asset1_amount, token_1_liquidity, token_2_liquidity).unwrap();
+
+			Ok(second_asset_amount)
 		}
 	}
 
@@ -290,12 +297,11 @@ pub mod pallet {
 		 * Inspect<T::AccountId>>::AssetId:
 		 * Display */
 	{
-        
-        // Args AssetsPallet::Config::AssetId,
+		// Args AssetsPallet::Config::AssetId,
 		// DispatchResult {
 		// TODO: see if tuples are a practical input here
 		// TODO: update asset1 and 2 to a and b
-        #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn create_pool(
 			origin: OriginFor<T>,
 			asset1: AssetIdOf<T>,
@@ -306,50 +312,43 @@ pub mod pallet {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
 
-            // Check the user input is valid
-            Self::check_create_pool_input_is_valid(
-                &sender,
+			// Check the user input is valid
+			Self::check_create_pool_input_is_valid(
+				&sender,
 				(asset1, asset2),
 				(asset1_amount, asset2_amount),
-            )?;
+			)?;
 
-            // Create the new liquidity pool
-            Self::create_new_pool(
-                &sender,
-				(asset1, asset2),
-				(asset1_amount, asset2_amount),
-            )?;
+			// Create the new liquidity pool
+			Self::create_new_pool(&sender, (asset1, asset2), (asset1_amount, asset2_amount))?;
 
-            Ok(())
+			Ok(())
 		}
 
-        #[pallet::weight(5_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(5_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn provide_liquidity(
 			origin: OriginFor<T>,
 			asset1: AssetIdOf<T>,
 			asset2: AssetIdOf<T>,
 			asset1_amount: BalanceOf<T>,
-			asset2_amount: BalanceOf<T>,
 		) -> DispatchResult {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
 
-            // Check the user input is valid
-            // TODO: update to check ratios are correct
-            // Self::check_create_pool_input_is_valid(
-            //     &sender,
+			let asset2_amount = Self::derive_second_asset_amount((asset1, asset2), asset1_amount)?;
+
+			// Check the user input is valid
+			// TODO: update to check ratios are correct
+			// Self::check_create_pool_input_is_valid(
+			//     &sender,
 			// 	(asset1, asset2),
 			// 	(asset1_amount, asset2_amount),
-            // )?;
+			// )?;
 
-            // Top up the liquidity pool
-            Self::top_up_liquidity_pool(
-                &sender,
-				(asset1, asset2),
-				(asset1_amount, asset2_amount),
-            )?;
+			// Top up the liquidity pool
+			Self::top_up_liquidity_pool(&sender, (asset1, asset2), (asset1_amount, asset2_amount))?;
 
-            Ok(())
+			Ok(())
 		}
 
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
