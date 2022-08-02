@@ -3,9 +3,6 @@ use super::*;
 impl<T: Config> Pallet<T>
 where
 	<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
-    // <T::MultiAssets as Inspect<T::AccountId>>::AssetId: From<T::AccountId>,
-    // <T::MultiAssets as Inspect<T::AccountId>>::Balance: AtLeast32Bit,
-    // T::AccountId: AtLeast32Bit,
 {
 	// TODO: check which of these functions need to be published
 	pub fn account_id() -> T::AccountId {
@@ -112,7 +109,6 @@ where
 		asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 	) -> Result<(), DispatchError> {
 		// Ensure that the assets are valid.
-		// TODO: refactor into method
 		ensure!(asset_pair.0 != asset_pair.1, Error::<T>::ProvidedInvalidAssetIds);
 
 		// check if sender has enough tokens to stake
@@ -171,15 +167,15 @@ where
 
 	pub fn derive_second_asset_amount(
 		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
-		asset1_amount: BalanceOf<T>,
+		asset_a_amount: BalanceOf<T>,
 	) -> Result<BalanceOf<T>, DispatchError> {
 		// Initialize the new pool
 		let pool_id = Self::get_pool_id(asset_pair);
-		let token_1_liquidity = T::MultiAssets::balance(asset_pair.0, &pool_id);
-		let token_2_liquidity = T::MultiAssets::balance(asset_pair.1, &pool_id);
+		let token_a_liquidity = T::MultiAssets::balance(asset_pair.0, &pool_id);
+		let token_b_liquidity = T::MultiAssets::balance(asset_pair.1, &pool_id);
 
 		let second_asset_amount =
-			get_token_b_amount(asset1_amount, token_1_liquidity, token_2_liquidity).unwrap();
+			get_token_b_amount(asset_a_amount, token_a_liquidity, token_b_liquidity).unwrap();
 
 		Ok(second_asset_amount)
 	}

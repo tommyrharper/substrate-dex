@@ -102,7 +102,6 @@ pub mod pallet {
 		<T::MultiAssets as Inspect<T::AccountId>>::AssetId: Codec,
 	{
 		// TODO: see if tuples are a practical input here
-		// TODO: update asset_a and 2 to a and b
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn create_pool(
 			origin: OriginFor<T>,

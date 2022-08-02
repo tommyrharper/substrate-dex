@@ -23,10 +23,9 @@ mod tests {
 		Assets::mint_into(asset, &user, amount).expect("Minting failed");
 	}
 
-	// TODO: update to use tuple
-	fn give_user_two_assets(user: AccountId, asset1: u32, asset2: u32, amount: u128) {
-		give_user_asset(user, asset1, amount);
-		give_user_asset(user, asset2, amount);
+	fn give_user_two_assets(user: AccountId, asset_pair: (u32, u32), amount: u128) {
+		give_user_asset(user, asset_pair.0, amount);
+		give_user_asset(user, asset_pair.1, amount);
 	}
 
 	fn check_users_balance(user: AccountId, asset: u32, amount: u128) {
@@ -61,13 +60,18 @@ mod tests {
 	fn check_lp_tokens_sent_to_provider(
 		user: AccountId,
 		asset_pair: (u32, u32),
-        new_token_amount: u128,
-        current_token_amount: u128,
-        total_lp_token_supply: u128,
+		new_token_amount: u128,
+		current_token_amount: u128,
+		total_lp_token_supply: u128,
 	) {
 		let pool_id = TemplateModule::get_pool_id(asset_pair);
 		let lp_token_id = TemplateModule::get_lp_token_id(&pool_id);
-		let amount = get_lp_tokens_for_existing_pool(new_token_amount, current_token_amount, total_lp_token_supply).unwrap();
+		let amount = get_lp_tokens_for_existing_pool(
+			new_token_amount,
+			current_token_amount,
+			total_lp_token_supply,
+		)
+		.unwrap();
 		check_users_balance(user, lp_token_id, amount);
 	}
 
@@ -76,7 +80,13 @@ mod tests {
 		new_test_ext().execute_with(|| {
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::create_pool(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				TemplateModule::create_pool(
+					origin,
+					ASSET_A,
+					ASSET_B,
+					ASSET_A_AMOUNT,
+					ASSET_B_AMOUNT
+				),
 				Error::<Test>::NotEnoughTokensToStake
 			);
 		});
@@ -89,7 +99,13 @@ mod tests {
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::create_pool(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				TemplateModule::create_pool(
+					origin,
+					ASSET_A,
+					ASSET_B,
+					ASSET_A_AMOUNT,
+					ASSET_B_AMOUNT
+				),
 				Error::<Test>::NotEnoughTokensToStake
 			);
 		});
@@ -102,7 +118,13 @@ mod tests {
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::create_pool(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				TemplateModule::create_pool(
+					origin,
+					ASSET_A,
+					ASSET_B,
+					ASSET_A_AMOUNT,
+					ASSET_B_AMOUNT
+				),
 				Error::<Test>::NotEnoughTokensToStake
 			);
 		});
@@ -111,11 +133,17 @@ mod tests {
 	#[test]
 	fn create_pool_same_asset_ids() {
 		new_test_ext().execute_with(|| {
-			give_user_two_assets(USER, ASSET_A, ASSET_B, MINTED_AMOUNT);
+			give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::create_pool(origin, ASSET_A, ASSET_A, ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				TemplateModule::create_pool(
+					origin,
+					ASSET_A,
+					ASSET_A,
+					ASSET_A_AMOUNT,
+					ASSET_B_AMOUNT
+				),
 				Error::<Test>::ProvidedInvalidAssetIds
 			);
 		});
@@ -124,7 +152,7 @@ mod tests {
 	#[test]
 	fn create_pool_with_enough_assets() {
 		new_test_ext().execute_with(|| {
-			give_user_two_assets(USER, ASSET_A, ASSET_B, MINTED_AMOUNT);
+			give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 			assert_ok!(TemplateModule::create_pool(
@@ -140,7 +168,7 @@ mod tests {
 	#[test]
 	fn can_transfer_assets() {
 		new_test_ext().execute_with(|| {
-			give_user_two_assets(USER, ASSET_A, ASSET_B, MINTED_AMOUNT);
+			give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 			Balances::make_free_balance_be(&USER_2, ExistentialDeposit::get());
 			let origin = Origin::signed(USER);
 			assert_ok!(Assets::transfer(origin, ASSET_A, USER_2, ASSET_A_AMOUNT));
@@ -150,7 +178,7 @@ mod tests {
 	#[test]
 	fn create_pool_transfers_tokens() {
 		new_test_ext().execute_with(|| {
-			give_user_two_assets(USER, ASSET_A, ASSET_B, MINTED_AMOUNT);
+			give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 
@@ -180,7 +208,7 @@ mod tests {
 	#[test]
 	fn provide_liquidity() {
 		new_test_ext().execute_with(|| {
-			give_user_two_assets(USER, ASSET_A, ASSET_B, MINTED_AMOUNT);
+			give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 
@@ -194,14 +222,11 @@ mod tests {
 
 			let origin = Origin::signed(USER_2);
 
-			assert_ok!(TemplateModule::provide_liquidity(
-				origin,
-				ASSET_A,
-				ASSET_B,
-				ASSET_A_AMOUNT,
-			),);
+			assert_ok!(
+				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
+			);
 
-            check_liquidity_taken(
+			check_liquidity_taken(
 				USER_2,
 				(ASSET_A, ASSET_B),
 				(MINTED_AMOUNT, MINTED_AMOUNT),
@@ -212,8 +237,8 @@ mod tests {
 				USER_2,
 				(ASSET_A, ASSET_B),
 				ASSET_A_AMOUNT,
-                ASSET_A_AMOUNT,
-                ASSET_A_AMOUNT,
+				ASSET_A_AMOUNT,
+				ASSET_A_AMOUNT,
 			);
 		});
 	}
