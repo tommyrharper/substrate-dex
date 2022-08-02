@@ -4,6 +4,21 @@
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
+use crate::dex_math::*;
+use frame_support::{
+    dispatch::{fmt::Debug, Codec, Decode, Encode},
+    // dispatch::fmt::Display,
+    pallet_prelude::*,
+    sp_runtime::traits::{AccountIdConversion, AtLeast32Bit, AtLeast32BitUnsigned},
+    traits::tokens::{
+        currency::Currency,
+        fungibles::{Create, Inspect, Mutate, Transfer},
+    },
+    Hashable,
+    PalletId,
+};
+use frame_system::pallet_prelude::*;
+use scale_info::prelude::vec;
 
 #[cfg(test)]
 mod mock;
@@ -13,27 +28,12 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-
+// mod impl_liquidity;
 mod dex_math;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use crate::dex_math::*;
-	use frame_support::{
-		dispatch::{fmt::Debug, Codec, Decode, Encode},
-		// dispatch::fmt::Display,
-		pallet_prelude::*,
-		sp_runtime::traits::{AccountIdConversion, AtLeast32Bit, AtLeast32BitUnsigned},
-		traits::tokens::{
-			currency::Currency,
-			fungibles::{Create, Inspect, Mutate, Transfer},
-		},
-		Hashable,
-		PalletId,
-	};
-	use frame_system::pallet_prelude::*;
-	use scale_info::prelude::vec;
-
+    use super::*;
 	type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
 	type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
 
