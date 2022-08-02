@@ -144,7 +144,7 @@ where
 		sender: &T::AccountId,
 		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 		asset_amounts: (BalanceOf<T>, BalanceOf<T>),
-		pool_liquidity: (BalanceOf<T>, BalanceOf<T>),
+		current_token_amount: BalanceOf<T>,
 	) -> Result<(), DispatchError> {
 		// Initialize the new pool
 		let pool_id = Self::get_pool_id(asset_pair);
@@ -157,7 +157,7 @@ where
 			&sender,
 			&pool_id,
 			asset_amounts.0,
-			pool_liquidity.0,
+			current_token_amount,
 		)?;
 
 		Ok(())
