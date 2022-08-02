@@ -178,16 +178,7 @@ mod tests {
 	#[test]
 	fn create_pool_with_enough_assets() {
 		new_test_ext().execute_with(|| {
-			create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
-
-			let origin = Origin::signed(USER);
-			assert_ok!(TemplateModule::create_pool(
-				origin,
-				ASSET_A,
-				ASSET_B,
-				ASSET_A_AMOUNT,
-				ASSET_B_AMOUNT,
-			),);
+			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
 		});
 	}
 
@@ -204,17 +195,7 @@ mod tests {
 	#[test]
 	fn create_pool_transfers_tokens() {
 		new_test_ext().execute_with(|| {
-			create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
-
-			let origin = Origin::signed(USER);
-
-			assert_ok!(TemplateModule::create_pool(
-				origin,
-				ASSET_A,
-				ASSET_B,
-				ASSET_A_AMOUNT,
-				ASSET_B_AMOUNT,
-			),);
+			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
 
 			check_liquidity_taken(
 				USER,
@@ -228,36 +209,6 @@ mod tests {
 				USER,
 				(ASSET_A, ASSET_B),
 				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
-			);
-		});
-	}
-
-	#[test]
-	fn provide_liquidity() {
-		new_test_ext().execute_with(|| {
-			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
-			give_user_two_assets(USER_2, (ASSET_A, ASSET_B), MINTED_AMOUNT);
-
-			let origin = Origin::signed(USER_2);
-
-			assert_ok!(
-				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
-			);
-
-			check_liquidity_taken(
-				USER_2,
-				(ASSET_A, ASSET_B),
-				(MINTED_AMOUNT, MINTED_AMOUNT),
-				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
-				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
-			);
-
-			check_lp_tokens_sent_to_provider(
-				USER_2,
-				(ASSET_A, ASSET_B),
-				ASSET_A_AMOUNT,
-				ASSET_A_AMOUNT,
-				ASSET_A_AMOUNT,
 			);
 		});
 	}
@@ -346,4 +297,34 @@ mod tests {
 	// 		);
 	// 	});
 	// }
+
+	#[test]
+	fn provide_liquidity() {
+		new_test_ext().execute_with(|| {
+			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
+			give_user_two_assets(USER_2, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+
+			let origin = Origin::signed(USER_2);
+
+			assert_ok!(
+				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
+			);
+
+			check_liquidity_taken(
+				USER_2,
+				(ASSET_A, ASSET_B),
+				(MINTED_AMOUNT, MINTED_AMOUNT),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+			);
+
+			check_lp_tokens_sent_to_provider(
+				USER_2,
+				(ASSET_A, ASSET_B),
+				ASSET_A_AMOUNT,
+				ASSET_A_AMOUNT,
+				ASSET_A_AMOUNT,
+			);
+		});
+	}
 }
