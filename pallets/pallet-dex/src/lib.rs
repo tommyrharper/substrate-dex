@@ -137,6 +137,7 @@ pub mod pallet {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
 
+            // Get pool data
 			let pool_liquidity = Self::get_pool_liquidity((asset_a, asset_b))?;
 			let asset_b_amount = Self::derive_second_asset_amount(pool_liquidity, asset_a_amount)?;
 
