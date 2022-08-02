@@ -172,20 +172,14 @@ pub mod pallet {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
 
-			// Get pool data
-			let pool_liquidity = Self::get_pool_liquidity((asset_a, asset_b))?;
-			let swap_return =
-				get_swap_return::<BalanceOf<T>, T>(asset_a_amount, pool_liquidity)?;
-
 			// Check the user is able to make the required deposit
-			Self::check_swap_is_valid(&sender, (asset_a, asset_b), (asset_a_amount, 0u32.into()))?;
+			Self::check_deposit_is_valid(&sender, (asset_a, asset_b), (asset_a_amount, 0u32.into()))?;
 
 			// Handle the swap
 			Self::process_swap(
 				&sender,
 				(asset_a, asset_b),
 				asset_a_amount,
-				swap_return,
 			)?;
 
 			Ok(())
