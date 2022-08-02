@@ -28,7 +28,7 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-// mod impl_liquidity;
+mod impl_liquidity;
 mod dex_math;
 
 #[frame_support::pallet]
@@ -109,9 +109,9 @@ pub mod pallet {
 			T::PalletId::get().into_account_truncating()
 		}
 
-		pub fn sub_account_id(sub: &[u8; 16]) -> T::AccountId {
-			T::PalletId::get().into_sub_account_truncating(sub)
-		}
+		// pub fn sub_account_id(sub: &[u8; 16]) -> T::AccountId {
+		// 	T::PalletId::get().into_sub_account_truncating(sub)
+		// }
 
 		pub fn pot(asset_id: AssetIdOf<T>) -> BalanceOf<T> {
 			T::MultiAssets::balance(asset_id, &Self::account_id())
