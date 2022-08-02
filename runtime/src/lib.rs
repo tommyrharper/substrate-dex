@@ -46,7 +46,7 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 /// Import the template pallet.
-pub use pallet_template;
+pub use pallet_dex;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -297,8 +297,8 @@ parameter_types! {
 	pub const PoolPalletId: PalletId = PalletId(*b"the/pool");
 }
 
-/// Configure the pallet-template in pallets/template.
-impl pallet_template::Config for Runtime {
+/// Configure the pallet-dex in pallets/template.
+impl pallet_dex::Config for Runtime {
 	type Event = Event;
     type MultiAssets = Assets;
     type Balances = Balances;
@@ -321,8 +321,8 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 		Assets: pallet_assets,
-		// Include the custom logic from the pallet-template in the runtime.
-		TemplateModule: pallet_template,
+		// Include the custom logic from the pallet-dex in the runtime.
+		DexModule: pallet_dex,
 	}
 );
 
@@ -367,7 +367,7 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_template, TemplateModule]
+		[pallet_dex, DexModule]
 	);
 }
 

@@ -1,4 +1,4 @@
-use crate as pallet_template;
+use crate as pallet_dex;
 use frame_support::{
 	parameter_types,
 	traits::{ConstU128, ConstU16, ConstU32, ConstU64},
@@ -27,7 +27,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		TemplateModule: pallet_template::{Pallet, Call, Storage, Event<T>},
+		DexModule: pallet_dex::{Pallet, Call, Storage, Event<T>},
 		Assets: pallet_assets,
 		Balances: pallet_balances,
 	}
@@ -107,7 +107,7 @@ parameter_types! {
 	pub const PoolPalletId: PalletId = PalletId(*b"the/pool");
 }
 
-impl pallet_template::Config for Test {
+impl pallet_dex::Config for Test {
 	type Event = Event;
 	type MultiAssets = Assets;
 	type Balances = Balances;

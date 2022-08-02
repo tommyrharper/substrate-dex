@@ -40,7 +40,7 @@ pub fn check_liquidity_taken(
 ) {
 	check_users_balance(user, asset_pair.0, starting_balances.0 - asset_amounts.0);
 	check_users_balance(user, asset_pair.1, starting_balances.1 - asset_amounts.1);
-	let pool_id = TemplateModule::get_pool_id(asset_pair);
+	let pool_id = DexModule::get_pool_id(asset_pair);
 	check_users_balance(pool_id, asset_pair.0, starting_liquidity.0 + asset_amounts.0);
 	check_users_balance(pool_id, asset_pair.1, starting_liquidity.0 + asset_amounts.1);
 }
@@ -50,8 +50,8 @@ pub fn check_lp_tokens_sent_to_pool_creator(
 	asset_pair: (u32, u32),
 	asset_amounts: (u128, u128),
 ) {
-	let pool_id = TemplateModule::get_pool_id(asset_pair);
-	let lp_token_id = TemplateModule::get_lp_token_id(&pool_id);
+	let pool_id = DexModule::get_pool_id(asset_pair);
+	let lp_token_id = DexModule::get_lp_token_id(&pool_id);
 	let amount = get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
 	check_users_balance(user, lp_token_id, amount);
 }
@@ -63,8 +63,8 @@ pub fn check_lp_tokens_sent_to_provider(
 	current_token_amount: u128,
 	total_lp_token_supply: u128,
 ) {
-	let pool_id = TemplateModule::get_pool_id(asset_pair);
-	let lp_token_id = TemplateModule::get_lp_token_id(&pool_id);
+	let pool_id = DexModule::get_pool_id(asset_pair);
+	let lp_token_id = DexModule::get_lp_token_id(&pool_id);
 	let amount = get_lp_tokens_for_existing_pool(
 		new_token_amount,
 		current_token_amount,
@@ -79,7 +79,7 @@ pub fn create_liquidity_pool(user: AccountId, asset_pair: (u32, u32), asset_amou
 
 	let origin = Origin::signed(user);
 
-	assert_ok!(TemplateModule::create_pool(
+	assert_ok!(DexModule::create_pool(
 		origin,
 		asset_pair.0,
 		asset_pair.1,

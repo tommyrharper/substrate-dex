@@ -20,7 +20,7 @@ mod tests {
 		new_test_ext().execute_with(|| {
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::create_pool(
+				DexModule::create_pool(
 					origin,
 					ASSET_A,
 					ASSET_B,
@@ -39,7 +39,7 @@ mod tests {
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::create_pool(
+				DexModule::create_pool(
 					origin,
 					ASSET_A,
 					ASSET_B,
@@ -58,7 +58,7 @@ mod tests {
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::create_pool(
+				DexModule::create_pool(
 					origin,
 					ASSET_A,
 					ASSET_B,
@@ -77,7 +77,7 @@ mod tests {
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				TemplateModule::create_pool(
+				DexModule::create_pool(
 					origin,
 					ASSET_A,
 					ASSET_A,
@@ -135,7 +135,7 @@ mod tests {
 			let origin = Origin::signed(USER_2);
 
 			assert_noop!(
-				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
+				DexModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
 				Error::<Test>::NotEnoughTokensToStake
 			);
 		});
@@ -150,7 +150,7 @@ mod tests {
 			let origin = Origin::signed(USER_2);
 
 			assert_noop!(
-				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
+				DexModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
 				Error::<Test>::NotEnoughTokensToStake
 			);
 		});
@@ -165,7 +165,7 @@ mod tests {
 			let origin = Origin::signed(USER_2);
 
 			assert_noop!(
-				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
+				DexModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
 				Error::<Test>::NotEnoughTokensToStake
 			);
 		});
@@ -180,7 +180,7 @@ mod tests {
 			let origin = Origin::signed(USER_2);
 
 			assert_noop!(
-				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_A, ASSET_A_AMOUNT,),
+				DexModule::provide_liquidity(origin, ASSET_A, ASSET_A, ASSET_A_AMOUNT,),
 				Error::<Test>::ProvidedInvalidAssetIds
 			);
 		});
@@ -195,7 +195,7 @@ mod tests {
 			let origin = Origin::signed(USER_2);
 
 			assert_ok!(
-				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
+				DexModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
 			);
 
 			check_liquidity_taken(
