@@ -1,7 +1,8 @@
 use crate as pallet_template;
 use frame_support::{
 	parameter_types,
-	traits::{ConstU128, ConstU16, ConstU32, ConstU64}, PalletId,
+	traits::{ConstU128, ConstU16, ConstU32, ConstU64},
+	PalletId,
 };
 use frame_system as system;
 use pallet_assets;
@@ -109,8 +110,8 @@ parameter_types! {
 impl pallet_template::Config for Test {
 	type Event = Event;
 	type MultiAssets = Assets;
-    type Balances = Balances;
-    type PalletId = PoolPalletId;
+	type Balances = Balances;
+	type PalletId = PoolPalletId;
 }
 
 // Build genesis storage according to the mock runtime.

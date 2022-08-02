@@ -49,7 +49,7 @@ mod tests {
 		asset_pair: (u32, u32),
 		starting_balances: (u128, u128),
 		asset_amounts: (u128, u128),
-        starting_liquidity: (u128, u128),
+		starting_liquidity: (u128, u128),
 	) {
 		check_users_balance(user, asset_pair.0, starting_balances.0 - asset_amounts.0);
 		check_users_balance(user, asset_pair.1, starting_balances.1 - asset_amounts.1);
@@ -207,7 +207,7 @@ mod tests {
 				(ASSET_A, ASSET_B),
 				(MINTED_AMOUNT, MINTED_AMOUNT),
 				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
-                (0, 0)
+				(0, 0),
 			);
 
 			check_lp_tokens_sent_to_pool_creator(
@@ -245,7 +245,7 @@ mod tests {
 				(ASSET_A, ASSET_B),
 				(MINTED_AMOUNT, MINTED_AMOUNT),
 				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
-                (ASSET_A_AMOUNT, ASSET_B_AMOUNT)
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
 			);
 
 			check_lp_tokens_sent_to_provider(

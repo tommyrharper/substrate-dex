@@ -136,10 +136,7 @@ pub mod pallet {
 			let sender = ensure_signed(origin)?;
 
 			let pool_liquidity = Self::get_pool_liquidity((asset_a, asset_b))?;
-			let asset_b_amount = Self::derive_second_asset_amount(
-				pool_liquidity,
-				asset_a_amount,
-			)?;
+			let asset_b_amount = Self::derive_second_asset_amount(pool_liquidity, asset_a_amount)?;
 
 			// Check the user is able to make the required deposit
 			Self::check_deposit_is_valid(
@@ -153,7 +150,7 @@ pub mod pallet {
 				&sender,
 				(asset_a, asset_b),
 				(asset_a_amount, asset_b_amount),
-                pool_liquidity,
+				pool_liquidity,
 			)?;
 
 			Ok(())
