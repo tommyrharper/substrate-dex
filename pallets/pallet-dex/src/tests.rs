@@ -1,7 +1,6 @@
 use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok, traits::Currency};
-
-use crate::test_utils::*;
+use crate::{dex_math::*, test_utils::*};
 
 const USER: AccountId = 1u32;
 const USER_2: AccountId = 2u32;
@@ -13,12 +12,12 @@ const MINTED_AMOUNT: u128 = 1_000_000_000;
 
 #[test]
 fn can_transfer_assets() {
-    new_test_ext().execute_with(|| {
-        create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
-        Balances::make_free_balance_be(&USER_2, ExistentialDeposit::get());
-        let origin = Origin::signed(USER);
-        assert_ok!(Assets::transfer(origin, ASSET_A, USER_2, ASSET_A_AMOUNT));
-    });
+	new_test_ext().execute_with(|| {
+		create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+		Balances::make_free_balance_be(&USER_2, ExistentialDeposit::get());
+		let origin = Origin::signed(USER);
+		assert_ok!(Assets::transfer(origin, ASSET_A, USER_2, ASSET_A_AMOUNT));
+	});
 }
 
 #[cfg(test)]
@@ -30,13 +29,7 @@ mod create_pool_tests {
 		new_test_ext().execute_with(|| {
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				DexModule::create_pool(
-					origin,
-					ASSET_A,
-					ASSET_B,
-					ASSET_A_AMOUNT,
-					ASSET_B_AMOUNT
-				),
+				DexModule::create_pool(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT, ASSET_B_AMOUNT),
 				Error::<Test>::NotEnoughTokensToStake
 			);
 		});
@@ -49,13 +42,7 @@ mod create_pool_tests {
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				DexModule::create_pool(
-					origin,
-					ASSET_A,
-					ASSET_B,
-					ASSET_A_AMOUNT,
-					ASSET_B_AMOUNT
-				),
+				DexModule::create_pool(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT, ASSET_B_AMOUNT),
 				Error::<Test>::NotEnoughTokensToStake
 			);
 		});
@@ -68,13 +55,7 @@ mod create_pool_tests {
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				DexModule::create_pool(
-					origin,
-					ASSET_A,
-					ASSET_B,
-					ASSET_A_AMOUNT,
-					ASSET_B_AMOUNT
-				),
+				DexModule::create_pool(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT, ASSET_B_AMOUNT),
 				Error::<Test>::NotEnoughTokensToStake
 			);
 		});
@@ -87,13 +68,7 @@ mod create_pool_tests {
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
-				DexModule::create_pool(
-					origin,
-					ASSET_A,
-					ASSET_A,
-					ASSET_A_AMOUNT,
-					ASSET_B_AMOUNT
-				),
+				DexModule::create_pool(origin, ASSET_A, ASSET_A, ASSET_A_AMOUNT, ASSET_B_AMOUNT),
 				Error::<Test>::ProvidedInvalidAssetIds
 			);
 		});
@@ -199,9 +174,7 @@ mod provide_liquidity_tests {
 
 			let origin = Origin::signed(USER_2);
 
-			assert_ok!(
-				DexModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
-			);
+			assert_ok!(DexModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),);
 
 			check_liquidity_taken(
 				USER_2,
@@ -218,6 +191,30 @@ mod provide_liquidity_tests {
 				ASSET_A_AMOUNT,
 				ASSET_A_AMOUNT,
 			);
+		});
+	}
+}
+
+#[cfg(test)]
+mod swap_tests {
+	use super::*;
+
+	#[test]
+	fn swap() {
+		new_test_ext().execute_with(|| {
+			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
+			give_user_two_assets(USER_2, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+
+			let origin = Origin::signed(USER_2);
+
+			assert_ok!(DexModule::swap(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT),);
+
+			let expected_return = get_swap_return::<u128, Test>(ASSET_A as u128, (ASSET_A_AMOUNT, ASSET_B_AMOUNT)).unwrap();
+
+			check_users_balance(USER_2, ASSET_A, MINTED_AMOUNT - ASSET_A_AMOUNT);
+			check_users_balance(USER_2, ASSET_B, expected_return);
+			let pool_id = DexModule::get_pool_id((ASSET_A, ASSET_B));
+			check_users_balance(pool_id, ASSET_A, ASSET_A_AMOUNT + ASSET_A_AMOUNT);
 		});
 	}
 }

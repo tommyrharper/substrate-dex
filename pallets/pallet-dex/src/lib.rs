@@ -32,6 +32,7 @@ mod test_utils;
 mod benchmarking;
 mod dex_math;
 mod impl_liquidity;
+mod impl_swap;
 
 type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
 type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
@@ -90,10 +91,12 @@ pub mod pallet {
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		// The user tried to stake more tokens than they have
+		/// The user tried to stake more tokens than they have
 		NotEnoughTokensToStake,
-		// The user did not provide valid asset ids
+		/// The user did not provide valid asset ids
 		ProvidedInvalidAssetIds,
+		/// The user did not provide valid asset ids
+		MathOverflow,
 	}
 
 	#[pallet::call]
@@ -155,6 +158,39 @@ pub mod pallet {
 				(asset_a_amount, asset_b_amount),
 				pool_liquidity,
 			)?;
+
+			Ok(())
+		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn swap(
+			origin: OriginFor<T>,
+			asset_a: AssetIdOf<T>,
+			asset_b: AssetIdOf<T>,
+			asset_a_amount: BalanceOf<T>,
+		) -> DispatchResult {
+			// check if message is signed
+			let sender = ensure_signed(origin)?;
+
+            // Get pool data
+			let pool_liquidity = Self::get_pool_liquidity((asset_a, asset_b))?;
+
+			// Check the user is able to make the required deposit
+			Self::check_swap_is_valid(
+				&sender,
+				(asset_a, asset_b),
+				(asset_a_amount, 0u32.into()),
+			)?;
+
+
+
+			// // Handle the swap
+			// Self::process_liquidity_pool_deposit(
+			// 	&sender,
+			// 	(asset_a, asset_b),
+			// 	(asset_a_amount, asset_b_amount),
+			// 	pool_liquidity,
+			// )?;
 
 			Ok(())
 		}

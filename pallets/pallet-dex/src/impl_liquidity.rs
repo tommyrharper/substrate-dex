@@ -168,7 +168,7 @@ where
 		asset_a_amount: BalanceOf<T>,
 	) -> Result<BalanceOf<T>, DispatchError> {
 		let second_asset_amount =
-			get_token_b_amount(asset_a_amount, pool_liquidity.0, pool_liquidity.1).unwrap();
+			get_token_b_amount(asset_a_amount, pool_liquidity).unwrap();
 
 		Ok(second_asset_amount)
 	}

@@ -4,6 +4,13 @@
 
 A fresh FRAME-based [Substrate](https://www.substrate.io/) node, ready for hacking :rocket:
 
+## Todo
+
+- Benchmarking
+- Events
+- Queries
+- Test dex_math utils
+
 ## Getting Started
 
 Follow the steps below to get started with the Node Template, or get it up and running right from
