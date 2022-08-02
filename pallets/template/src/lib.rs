@@ -1,23 +1,23 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use crate::dex_math::*;
+use frame_support::{
+	dispatch::{fmt::Debug, Codec, Decode, Encode},
+	// dispatch::fmt::Display,
+	pallet_prelude::*,
+	sp_runtime::traits::{AccountIdConversion, AtLeast32Bit, AtLeast32BitUnsigned},
+	traits::tokens::{
+		currency::Currency,
+		fungibles::{Create, Inspect, Mutate, Transfer},
+	},
+	Hashable,
+	PalletId,
+};
+use frame_system::pallet_prelude::*;
 /// Edit this file to define custom logic or remove it if it is not needed.
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
-use crate::dex_math::*;
-use frame_support::{
-    dispatch::{fmt::Debug, Codec, Decode, Encode},
-    // dispatch::fmt::Display,
-    pallet_prelude::*,
-    sp_runtime::traits::{AccountIdConversion, AtLeast32Bit, AtLeast32BitUnsigned},
-    traits::tokens::{
-        currency::Currency,
-        fungibles::{Create, Inspect, Mutate, Transfer},
-    },
-    Hashable,
-    PalletId,
-};
-use frame_system::pallet_prelude::*;
 use scale_info::prelude::vec;
 
 #[cfg(test)]
@@ -28,16 +28,15 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-mod impl_liquidity;
 mod dex_math;
+mod impl_liquidity;
 
 type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
 type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
 
 #[frame_support::pallet]
 pub mod pallet {
-    use super::*;
-
+	use super::*;
 
 	// How to do tight coupling:
 	// pub trait Config: frame_system::Config + pallet_assets::Config {
@@ -113,8 +112,8 @@ pub mod pallet {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
 
-			// Check the user input is valid
-			Self::check_create_pool_input_is_valid(
+			// Check the user is able to make the required deposit
+			Self::check_deposit_is_valid(
 				&sender,
 				(asset_a, asset_b),
 				(asset_a_amount, asset_b_amount),
@@ -136,18 +135,26 @@ pub mod pallet {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
 
-			let asset_b_amount = Self::derive_second_asset_amount((asset_a, asset_b), asset_a_amount)?;
+			let pool_liquidity = Self::get_pool_liquidity((asset_a, asset_b))?;
+			let asset_b_amount = Self::derive_second_asset_amount(
+				pool_liquidity,
+				asset_a_amount,
+			)?;
 
-			// Check the user input is valid
-			// TODO: update to check ratios are correct
-			// Self::check_create_pool_input_is_valid(
-			//     &sender,
-			// 	(asset_a, asset_b),
-			// 	(asset_a_amount, asset_b_amount),
-			// )?;
+			// Check the user is able to make the required deposit
+			Self::check_deposit_is_valid(
+				&sender,
+				(asset_a, asset_b),
+				(asset_a_amount, asset_b_amount),
+			)?;
 
-			// Top up the liquidity pool
-			Self::top_up_liquidity_pool(&sender, (asset_a, asset_b), (asset_a_amount, asset_b_amount))?;
+			// Handle the deposit to the liquidity pool
+			Self::process_liquidity_pool_deposit(
+				&sender,
+				(asset_a, asset_b),
+				(asset_a_amount, asset_b_amount),
+                pool_liquidity,
+			)?;
 
 			Ok(())
 		}

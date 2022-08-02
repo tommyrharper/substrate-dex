@@ -16,11 +16,22 @@ mod tests {
 	const ASSET_B_AMOUNT: u128 = 1_000_000;
 	const MINTED_AMOUNT: u128 = 1_000_000_000;
 
-	fn give_user_asset(user: AccountId, asset: u32, amount: u128) {
+	fn create_and_give_user_asset(user: AccountId, asset: u32, amount: u128) {
 		let origin = Origin::signed(user);
 		Balances::make_free_balance_be(&user, amount);
 		Assets::create(origin, asset, user, 1).expect("Asset creation failed");
 		Assets::mint_into(asset, &user, amount).expect("Minting failed");
+	}
+
+	fn give_user_asset(user: AccountId, asset: u32, amount: u128) {
+		let origin = Origin::signed(user);
+		Balances::make_free_balance_be(&user, amount);
+		Assets::mint_into(asset, &user, amount).expect("Minting failed");
+	}
+
+	fn create_and_give_user_two_assets(user: AccountId, asset_pair: (u32, u32), amount: u128) {
+		create_and_give_user_asset(user, asset_pair.0, amount);
+		create_and_give_user_asset(user, asset_pair.1, amount);
 	}
 
 	fn give_user_two_assets(user: AccountId, asset_pair: (u32, u32), amount: u128) {
@@ -38,12 +49,13 @@ mod tests {
 		asset_pair: (u32, u32),
 		starting_balances: (u128, u128),
 		asset_amounts: (u128, u128),
+        starting_liquidity: (u128, u128),
 	) {
 		check_users_balance(user, asset_pair.0, starting_balances.0 - asset_amounts.0);
 		check_users_balance(user, asset_pair.1, starting_balances.1 - asset_amounts.1);
 		let pool_id = TemplateModule::get_pool_id(asset_pair);
-		check_users_balance(pool_id, asset_pair.0, asset_amounts.0);
-		check_users_balance(pool_id, asset_pair.1, asset_amounts.1);
+		check_users_balance(pool_id, asset_pair.0, starting_liquidity.0 + asset_amounts.0);
+		check_users_balance(pool_id, asset_pair.1, starting_liquidity.0 + asset_amounts.1);
 	}
 
 	fn check_lp_tokens_sent_to_pool_creator(
@@ -95,7 +107,7 @@ mod tests {
 	#[test]
 	fn create_pool_without_first_token() {
 		new_test_ext().execute_with(|| {
-			give_user_asset(USER, ASSET_B, MINTED_AMOUNT);
+			create_and_give_user_asset(USER, ASSET_B, MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
@@ -114,7 +126,7 @@ mod tests {
 	#[test]
 	fn create_pool_without_second_token() {
 		new_test_ext().execute_with(|| {
-			give_user_asset(USER, ASSET_A, MINTED_AMOUNT);
+			create_and_give_user_asset(USER, ASSET_A, MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
@@ -133,7 +145,7 @@ mod tests {
 	#[test]
 	fn create_pool_same_asset_ids() {
 		new_test_ext().execute_with(|| {
-			give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+			create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 			assert_noop!(
@@ -152,7 +164,7 @@ mod tests {
 	#[test]
 	fn create_pool_with_enough_assets() {
 		new_test_ext().execute_with(|| {
-			give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+			create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 			assert_ok!(TemplateModule::create_pool(
@@ -168,7 +180,7 @@ mod tests {
 	#[test]
 	fn can_transfer_assets() {
 		new_test_ext().execute_with(|| {
-			give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+			create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 			Balances::make_free_balance_be(&USER_2, ExistentialDeposit::get());
 			let origin = Origin::signed(USER);
 			assert_ok!(Assets::transfer(origin, ASSET_A, USER_2, ASSET_A_AMOUNT));
@@ -178,7 +190,7 @@ mod tests {
 	#[test]
 	fn create_pool_transfers_tokens() {
 		new_test_ext().execute_with(|| {
-			give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+			create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 
@@ -195,6 +207,7 @@ mod tests {
 				(ASSET_A, ASSET_B),
 				(MINTED_AMOUNT, MINTED_AMOUNT),
 				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+                (0, 0)
 			);
 
 			check_lp_tokens_sent_to_pool_creator(
@@ -208,7 +221,8 @@ mod tests {
 	#[test]
 	fn provide_liquidity() {
 		new_test_ext().execute_with(|| {
-			give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+			create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+			give_user_two_assets(USER_2, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER);
 
@@ -231,6 +245,7 @@ mod tests {
 				(ASSET_A, ASSET_B),
 				(MINTED_AMOUNT, MINTED_AMOUNT),
 				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+                (ASSET_A_AMOUNT, ASSET_B_AMOUNT)
 			);
 
 			check_lp_tokens_sent_to_provider(
