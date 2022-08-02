@@ -24,7 +24,6 @@ mod tests {
 	}
 
 	fn give_user_asset(user: AccountId, asset: u32, amount: u128) {
-		let origin = Origin::signed(user);
 		Balances::make_free_balance_be(&user, amount);
 		Assets::mint_into(asset, &user, amount).expect("Minting failed");
 	}
@@ -213,90 +212,65 @@ mod tests {
 		});
 	}
 
-	// #[test]
-	// fn provide_liquidity_without_any_tokens() {
-	// 	new_test_ext().execute_with(|| {
-	// 		create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+	#[test]
+	fn provide_liquidity_without_any_token() {
+		new_test_ext().execute_with(|| {
+			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
 
-	// 		let origin = Origin::signed(USER);
+            let origin = Origin::signed(USER_2);
 
-	// 		assert_ok!(TemplateModule::create_pool(
-	// 			origin,
-	// 			ASSET_A,
-	// 			ASSET_B,
-	// 			ASSET_A_AMOUNT,
-	// 			ASSET_B_AMOUNT,
-	// 		),);
+			assert_noop!(
+				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
+				Error::<Test>::NotEnoughTokensToStake
+			);
+		});
+	}
 
-	// 		let origin = Origin::signed(USER_2);
+	#[test]
+	fn provide_liquidity_without_first_token() {
+		new_test_ext().execute_with(|| {
+			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
+			give_user_asset(USER_2, ASSET_B, MINTED_AMOUNT);
 
-	// 		assert_ok!(
-	// 			TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
-	// 		);
+            let origin = Origin::signed(USER_2);
 
-	// 		assert_noop!(
-	// 			TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
-	// 			Error::<Test>::NotEnoughTokensToStake
-	// 		);
-	// 	});
-	// }
+			assert_noop!(
+				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
+				Error::<Test>::NotEnoughTokensToStake
+			);
+		});
+	}
 
-	// #[test]
-	// fn create_pool_without_first_token() {
-	// 	new_test_ext().execute_with(|| {
-	// 		create_and_give_user_asset(USER, ASSET_B, MINTED_AMOUNT);
 
-	// 		let origin = Origin::signed(USER);
-	// 		assert_noop!(
-	// 			TemplateModule::create_pool(
-	// 				origin,
-	// 				ASSET_A,
-	// 				ASSET_B,
-	// 				ASSET_A_AMOUNT,
-	// 				ASSET_B_AMOUNT
-	// 			),
-	// 			Error::<Test>::NotEnoughTokensToStake
-	// 		);
-	// 	});
-	// }
+	#[test]
+	fn provide_liquidity_without_second_token() {
+		new_test_ext().execute_with(|| {
+			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
+			give_user_asset(USER_2, ASSET_A, MINTED_AMOUNT);
 
-	// #[test]
-	// fn create_pool_without_second_token() {
-	// 	new_test_ext().execute_with(|| {
-	// 		create_and_give_user_asset(USER, ASSET_A, MINTED_AMOUNT);
+            let origin = Origin::signed(USER_2);
 
-	// 		let origin = Origin::signed(USER);
-	// 		assert_noop!(
-	// 			TemplateModule::create_pool(
-	// 				origin,
-	// 				ASSET_A,
-	// 				ASSET_B,
-	// 				ASSET_A_AMOUNT,
-	// 				ASSET_B_AMOUNT
-	// 			),
-	// 			Error::<Test>::NotEnoughTokensToStake
-	// 		);
-	// 	});
-	// }
+			assert_noop!(
+				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
+				Error::<Test>::NotEnoughTokensToStake
+			);
+		});
+	}
 
-	// #[test]
-	// fn create_pool_same_asset_ids() {
-	// 	new_test_ext().execute_with(|| {
-	// 		create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+	#[test]
+	fn provide_liquidity_same_asset_ids() {
+		new_test_ext().execute_with(|| {
+			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
+			give_user_two_assets(USER_2, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 
-	// 		let origin = Origin::signed(USER);
-	// 		assert_noop!(
-	// 			TemplateModule::create_pool(
-	// 				origin,
-	// 				ASSET_A,
-	// 				ASSET_A,
-	// 				ASSET_A_AMOUNT,
-	// 				ASSET_B_AMOUNT
-	// 			),
-	// 			Error::<Test>::ProvidedInvalidAssetIds
-	// 		);
-	// 	});
-	// }
+            let origin = Origin::signed(USER_2);
+
+			assert_noop!(
+				TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_A, ASSET_A_AMOUNT,),
+				Error::<Test>::ProvidedInvalidAssetIds
+			);
+		});
+	}
 
 	#[test]
 	fn provide_liquidity() {
