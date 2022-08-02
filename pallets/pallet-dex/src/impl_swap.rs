@@ -4,7 +4,7 @@ impl<T: Config> Pallet<T>
 where
 	<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
 {
-    pub fn check_swap_is_valid(
+	pub fn check_swap_is_valid(
 		sender: &T::AccountId,
 		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 		asset_amounts: (BalanceOf<T>, BalanceOf<T>),
@@ -18,8 +18,19 @@ where
 		Ok(())
 	}
 
-    pub fn process_swap() {
-        
-    }
+	pub fn process_swap(
+		sender: &T::AccountId,
+		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
+		asset_a_amount: BalanceOf<T>,
+		swap_return: BalanceOf<T>,
+	) -> Result<(), DispatchError> {
+		let pool_id = Self::get_pool_id(asset_pair);
+		// send token into pool
+		T::MultiAssets::transfer(asset_pair.0, &sender, &pool_id, asset_a_amount, true)?;
 
+		// send tokens to users
+		T::MultiAssets::transfer(asset_pair.1, &pool_id, &sender, swap_return, true)?;
+
+        Ok(())
+	}
 }

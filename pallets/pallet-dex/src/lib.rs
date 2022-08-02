@@ -180,13 +180,13 @@ pub mod pallet {
 			// Check the user is able to make the required deposit
 			Self::check_swap_is_valid(&sender, (asset_a, asset_b), (asset_a_amount, 0u32.into()))?;
 
-			// // Handle the swap
-			// Self::process_liquidity_pool_deposit(
-			// 	&sender,
-			// 	(asset_a, asset_b),
-			// 	(asset_a_amount, asset_b_amount),
-			// 	pool_liquidity,
-			// )?;
+			// Handle the swap
+			Self::process_swap(
+				&sender,
+				(asset_a, asset_b),
+				asset_a_amount,
+				swap_return,
+			)?;
 
 			Ok(())
 		}
