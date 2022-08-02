@@ -87,6 +87,20 @@ mod tests {
 		check_users_balance(user, lp_token_id, amount);
 	}
 
+	fn create_liquidity_pool(user: AccountId, asset_pair: (u32, u32), asset_amounts: (u128, u128)) {
+		create_and_give_user_two_assets(user, asset_pair, MINTED_AMOUNT);
+
+		let origin = Origin::signed(user);
+
+		assert_ok!(TemplateModule::create_pool(
+			origin,
+			asset_pair.0,
+			asset_pair.1,
+			asset_amounts.0,
+			asset_amounts.0,
+		),);
+	}
+
 	#[test]
 	fn create_pool_without_any_tokens() {
 		new_test_ext().execute_with(|| {
@@ -221,18 +235,8 @@ mod tests {
 	#[test]
 	fn provide_liquidity() {
 		new_test_ext().execute_with(|| {
-			create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
 			give_user_two_assets(USER_2, (ASSET_A, ASSET_B), MINTED_AMOUNT);
-
-			let origin = Origin::signed(USER);
-
-			assert_ok!(TemplateModule::create_pool(
-				origin,
-				ASSET_A,
-				ASSET_B,
-				ASSET_A_AMOUNT,
-				ASSET_B_AMOUNT,
-			),);
 
 			let origin = Origin::signed(USER_2);
 
@@ -257,4 +261,89 @@ mod tests {
 			);
 		});
 	}
+
+	// #[test]
+	// fn provide_liquidity_without_any_tokens() {
+	// 	new_test_ext().execute_with(|| {
+	// 		create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+
+	// 		let origin = Origin::signed(USER);
+
+	// 		assert_ok!(TemplateModule::create_pool(
+	// 			origin,
+	// 			ASSET_A,
+	// 			ASSET_B,
+	// 			ASSET_A_AMOUNT,
+	// 			ASSET_B_AMOUNT,
+	// 		),);
+
+	// 		let origin = Origin::signed(USER_2);
+
+	// 		assert_ok!(
+	// 			TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
+	// 		);
+
+	// 		assert_noop!(
+	// 			TemplateModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
+	// 			Error::<Test>::NotEnoughTokensToStake
+	// 		);
+	// 	});
+	// }
+
+	// #[test]
+	// fn create_pool_without_first_token() {
+	// 	new_test_ext().execute_with(|| {
+	// 		create_and_give_user_asset(USER, ASSET_B, MINTED_AMOUNT);
+
+	// 		let origin = Origin::signed(USER);
+	// 		assert_noop!(
+	// 			TemplateModule::create_pool(
+	// 				origin,
+	// 				ASSET_A,
+	// 				ASSET_B,
+	// 				ASSET_A_AMOUNT,
+	// 				ASSET_B_AMOUNT
+	// 			),
+	// 			Error::<Test>::NotEnoughTokensToStake
+	// 		);
+	// 	});
+	// }
+
+	// #[test]
+	// fn create_pool_without_second_token() {
+	// 	new_test_ext().execute_with(|| {
+	// 		create_and_give_user_asset(USER, ASSET_A, MINTED_AMOUNT);
+
+	// 		let origin = Origin::signed(USER);
+	// 		assert_noop!(
+	// 			TemplateModule::create_pool(
+	// 				origin,
+	// 				ASSET_A,
+	// 				ASSET_B,
+	// 				ASSET_A_AMOUNT,
+	// 				ASSET_B_AMOUNT
+	// 			),
+	// 			Error::<Test>::NotEnoughTokensToStake
+	// 		);
+	// 	});
+	// }
+
+	// #[test]
+	// fn create_pool_same_asset_ids() {
+	// 	new_test_ext().execute_with(|| {
+	// 		create_and_give_user_two_assets(USER, (ASSET_A, ASSET_B), MINTED_AMOUNT);
+
+	// 		let origin = Origin::signed(USER);
+	// 		assert_noop!(
+	// 			TemplateModule::create_pool(
+	// 				origin,
+	// 				ASSET_A,
+	// 				ASSET_A,
+	// 				ASSET_A_AMOUNT,
+	// 				ASSET_B_AMOUNT
+	// 			),
+	// 			Error::<Test>::ProvidedInvalidAssetIds
+	// 		);
+	// 	});
+	// }
 }
