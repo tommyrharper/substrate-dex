@@ -237,7 +237,7 @@ impl pallet_timestamp::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: u128 = 10;
+	pub const ExistentialDeposit: u128 = 1;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -257,7 +257,7 @@ impl pallet_balances::Config for Runtime {
 impl pallet_transaction_payment::Config for Runtime {
 	type Event = Event;
 	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
-	type OperationalFeeMultiplier = ConstU8<5>;
+	type OperationalFeeMultiplier = ConstU8<1>;
 	type WeightToFee = IdentityFee<Balance>;
 	type LengthToFee = IdentityFee<Balance>;
 	type FeeMultiplierUpdate = ();
@@ -269,10 +269,10 @@ impl pallet_sudo::Config for Runtime {
 }
 
 parameter_types! {
-	pub const AssetDeposit: Balance = 100_000;
-	pub const MetadataDepositBase: Balance = 10_000;
-	pub const MetadataDepositPerByte: Balance = 1_000;
-	pub const ApprovalDeposit: Balance = 1_000;
+	pub const AssetDeposit: Balance = 1;
+	pub const MetadataDepositBase: Balance = 1;
+	pub const MetadataDepositPerByte: Balance = 1;
+	pub const ApprovalDeposit: Balance = 1;
 	pub const StringLimit: u32 = 50;
 }
 
@@ -283,7 +283,7 @@ impl pallet_assets::Config for Runtime {
 	type Currency = Balances;
 	type ForceOrigin = EnsureRoot<AccountId>;
 	type AssetDeposit = AssetDeposit;
-	type AssetAccountDeposit = ConstU128<1_000_000>;
+	type AssetAccountDeposit = ConstU128<1>;
 	type MetadataDepositBase = MetadataDepositBase;
 	type MetadataDepositPerByte = MetadataDepositPerByte;
 	type ApprovalDeposit = ApprovalDeposit;
