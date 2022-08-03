@@ -9,8 +9,7 @@ use frame_support::{
 		currency::Currency,
 		fungibles::{Create, Inspect, Mutate, Transfer},
 	},
-	Hashable,
-	PalletId,
+	Hashable, PalletId,
 };
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
@@ -26,10 +25,10 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 mod dex_math;
-mod impl_dex;
 mod impl_create_pool;
-mod impl_provide_liquidity;
+mod impl_dex;
 mod impl_lp_redemption;
+mod impl_provide_liquidity;
 mod impl_swap;
 
 type AssetIdOf<T: Config> = <T::Assets as Inspect<T::AccountId>>::AssetId;
@@ -44,16 +43,16 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-        /// Asset type for this pallet
+		/// Asset type for this pallet
 		type Assets: Inspect<Self::AccountId>
 			+ Transfer<Self::AccountId>
 			+ Mutate<Self::AccountId>
 			+ Create<Self::AccountId>;
 
-        /// Balances is the Currency type for this pallet
+		/// Balances is the Currency type for this pallet
 		type Balances: Currency<Self::AccountId>;
 
-        /// PalletId for this pallet - used to manage the liquidity pools
+		/// PalletId for this pallet - used to manage the liquidity pools
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
 	}
@@ -67,21 +66,27 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-        /// A new liquidity pool has been successfully created
-		/// parameters: [the id of the new pool]
-        NewPoolCreated { pool_id: T::AccountId },
-        /// Liquidity has been successfully added to the pool
-        LiquidityProvided {
-            pool_id: T::AccountId,
-            lp_token_id: AssetIdOf<T>,
-            earned_lp_tokens: BalanceOf<T>,
-        },
-        /// Tokens have been successfully swapped
-        TokensSwapped {
-            pool_id: T::AccountId,
-            asset_received: AssetIdOf<T>,
-            swap_return: BalanceOf<T>,
-        },
+		/// A new liquidity pool has been successfully created
+		NewPoolCreated { pool_id: T::AccountId },
+		/// Liquidity has been successfully added to the pool
+		LiquidityProvided {
+			pool_id: T::AccountId,
+			lp_token_id: AssetIdOf<T>,
+			earned_lp_tokens: BalanceOf<T>,
+		},
+		/// Tokens have been successfully swapped
+		TokensSwapped {
+			pool_id: T::AccountId,
+			asset_received: AssetIdOf<T>,
+			swap_return: BalanceOf<T>,
+		},
+		/// LP tokens have been successfully redeemed
+		/// to acquire assets back from the pool
+		LiquidityRedeemed {
+			pool_id: T::AccountId,
+			asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
+			redeemed_token_amounts: (BalanceOf<T>, BalanceOf<T>),
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -208,7 +213,7 @@ pub mod pallet {
 			// Redeem the users LP tokens
 			Self::handle_lp_token_redemption(
 				&sender,
-				&pool_id,
+				pool_id,
 				lp_token_id,
 				lp_token_amount,
 				(asset_a, asset_b),

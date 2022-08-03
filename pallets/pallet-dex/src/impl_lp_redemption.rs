@@ -24,7 +24,7 @@ where
 
 	pub fn handle_lp_token_redemption(
 		sender: &T::AccountId,
-		pool_id: &T::AccountId,
+		pool_id: T::AccountId,
 		lp_token_id: AssetIdOf<T>,
 		lp_token_amount: BalanceOf<T>,
 		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
@@ -42,6 +42,12 @@ where
 
 		// Burn the LP tokens
 		T::Assets::burn_from(lp_token_id, &sender, lp_token_amount)?;
+
+        Self::deposit_event(Event::LiquidityRedeemed {
+			pool_id,
+			asset_pair,
+			redeemed_token_amounts,
+		});
 
 		Ok(())
 	}
