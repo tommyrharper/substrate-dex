@@ -15,6 +15,36 @@ My DEX with the following features:
 - Swap any two assets for which there exists a liquidity pool.
 - Redeem LP tokens for your share of a pools assets, including a proportional share any accrued trading fees.
 
+## Quick Start
+
+1. Build the project:
+```bash
+cargo build --release
+```
+2. Boot the node in dev mode:
+```
+./target/release/node-template --dev
+```
+3. Clone the [substrate-front-end-template](https://github.com/substrate-developer-hub/substrate-front-end-template)
+4. Start the front-end
+```
+yarn start
+```
+5. Open the front-end in your browser and navigate to http://localhost:8080/
+6. Interact with `dexModule`
+
+
+## Interacting with the node
+You can follow a 4 stage process to test out the functionality:
+1. Create a new pool (assets 1 and 2 are in the genesis block):
+![](2022-08-03-12-01-40.png)
+2. Provide further liquidity for the pool:
+![](2022-08-03-12-02-07.png)
+3. Make a swap of asset_a for asset_b:
+![](2022-08-03-12-02-40.png)
+4. Redeem your LP tokens plus any rewards:
+![](2022-08-03-12-03-13.png)
+
 ## Architecture
 
 ## Efficiency and Storage
