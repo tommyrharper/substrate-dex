@@ -20,6 +20,55 @@ fn can_transfer_assets() {
 }
 
 #[cfg(test)]
+mod dex_math_tests {
+	use super::*;
+
+	#[test]
+	fn test_get_lp_tokens_for_new_pool() {
+		new_test_ext().execute_with(|| {
+			let expected_return = get_lp_tokens_for_new_pool(50u32, 50u32).unwrap();
+			assert_eq!(expected_return, 50);
+
+			let expected_return = get_lp_tokens_for_new_pool(25u32, 4u32).unwrap();
+			assert_eq!(expected_return, 10);
+		});
+	}
+
+	#[test]
+	fn test_get_lp_tokens_for_existing_pool() {
+		new_test_ext().execute_with(|| {
+			let expected_return = get_lp_tokens_for_existing_pool(50u32, 50u32, 50u32).unwrap();
+			assert_eq!(expected_return, 50);
+
+			let expected_return = get_lp_tokens_for_existing_pool(50u32, 100u32, 50u32).unwrap();
+			assert_eq!(expected_return, 25);
+		});
+	}
+
+	#[test]
+	fn test_get_token_b_amount() {
+		new_test_ext().execute_with(|| {
+			let expected_return = get_token_b_amount(50u32, (100u32, 50u32)).unwrap();
+			assert_eq!(expected_return, 25);
+
+			let expected_return = get_token_b_amount(50u32, (50u32, 100u32)).unwrap();
+			assert_eq!(expected_return, 100);
+		});
+	}
+
+	#[test]
+	fn test_get_swap_return() {
+		new_test_ext().execute_with(|| {
+			let expected_return = get_swap_return::<u128, Test>(50u128, (50u128, 100u128)).unwrap();
+			assert_eq!(expected_return, 45);
+
+			let expected_return = get_swap_return::<u128, Test>(50u128, (100u128, 50u128)).unwrap();
+			assert_eq!(expected_return, 15);
+		});
+	}
+}
+
+#[cfg(test)]
 mod create_pool_tests {
 	use super::*;
 
@@ -220,50 +269,34 @@ mod swap_tests {
 }
 
 #[cfg(test)]
-mod dex_math_tests {
+mod redeem_lp_tokens_tests {
 	use super::*;
 
 	#[test]
-	fn test_get_lp_tokens_for_new_pool() {
+	fn test_redeem_lp_tokens() {
 		new_test_ext().execute_with(|| {
-			let expected_return = get_lp_tokens_for_new_pool(50u32, 50u32).unwrap();
-			assert_eq!(expected_return, 50);
+			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
 
-			let expected_return = get_lp_tokens_for_new_pool(25u32, 4u32).unwrap();
-			assert_eq!(expected_return, 10);
-		});
-	}
+			let origin = Origin::signed(USER_2);
 
-	#[test]
-	fn test_get_lp_tokens_for_existing_pool() {
-		new_test_ext().execute_with(|| {
-			let expected_return = get_lp_tokens_for_existing_pool(50u32, 50u32, 50u32).unwrap();
-			assert_eq!(expected_return, 50);
+			assert_ok!(DexModule::redeem_lp_tokens(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT));
 
-			let expected_return = get_lp_tokens_for_existing_pool(50u32, 100u32, 50u32).unwrap();
-			assert_eq!(expected_return, 25);
-		});
-	}
+            check_lp_tokens_redeemed(
+                USER_2,
+                (ASSET_A, ASSET_B),
+                ASSET_A_AMOUNT,
+            );
 
-	#[test]
-	fn test_get_token_b_amount() {
-		new_test_ext().execute_with(|| {
-			let expected_return = get_token_b_amount(50u32, (100u32, 50u32)).unwrap();
-			assert_eq!(expected_return, 25);
+            // check_users_balance(USER, ASSET_A, ASSET_A_AMOUNT);
+            // check_users_balance(USER, ASSET_B, ASSET_B_AMOUNT);
 
-			let expected_return = get_token_b_amount(50u32, (50u32, 100u32)).unwrap();
-			assert_eq!(expected_return, 100);
-		});
-	}
+            // let pool_id = DexModule::get_pool_id((ASSET_A, ASSET_B));
+            // let lp_token_id = DexModule::get_lp_token_id(&pool_id);
 
-	#[test]
-	fn test_get_swap_return() {
-		new_test_ext().execute_with(|| {
-			let expected_return = get_swap_return::<u128, Test>(50u128, (50u128, 100u128)).unwrap();
-			assert_eq!(expected_return, 45);
-
-			let expected_return = get_swap_return::<u128, Test>(50u128, (100u128, 50u128)).unwrap();
-			assert_eq!(expected_return, 15);
+            // check_users_balance(USER, lp_token_id, 0);
+            // check_users_balance(pool_id, ASSET_A, 0);
+            // check_users_balance(pool_id, ASSET_B, 0);
+            // check_users_balance(pool_id, lp_token_id, 0);
 		});
 	}
 }

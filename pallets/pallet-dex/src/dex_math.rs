@@ -20,6 +20,9 @@ pub fn get_lp_tokens_for_existing_pool<T: AtLeast32Bit + CheckedDiv + CheckedMul
 	current_token_amount: T,
 	total_lp_token_supply: T,
 ) -> Option<T> {
+    let current_token_amount: T = if current_token_amount == 0u32.into() { 1u32.into() } else { current_token_amount };
+    let total_lp_token_supply: T = if total_lp_token_supply == 0u32.into() { 1u32.into() } else { total_lp_token_supply };
+
 	let multiplier: T = MULTIPLIER.into();
 	let large_new_token_amount = new_token_amount.checked_mul(&multiplier);
 
@@ -36,7 +39,10 @@ pub fn get_token_b_amount<T: AtLeast32Bit + CheckedDiv + CheckedMul>(
 ) -> Option<T> {
 	let multiplier: T = MULTIPLIER.into();
 
-	let liquidity_ratio = liquidity_amounts.0.checked_mul(&multiplier)?.checked_div(&liquidity_amounts.1);
+    let liquidity_a_amount: T = if liquidity_amounts.0 == 0u32.into() { 1u32.into() } else { liquidity_amounts.0 };
+    let liquidity_b_amount: T = if liquidity_amounts.1 == 0u32.into() { 1u32.into() } else { liquidity_amounts.1 };
+
+	let liquidity_ratio = liquidity_a_amount.checked_mul(&multiplier)?.checked_div(&liquidity_b_amount);
 
 	match liquidity_ratio {
 		Some(liquidity_ratio) => token_a_amount.checked_mul(&multiplier)?.checked_div(&liquidity_ratio),

@@ -32,6 +32,7 @@ mod tests;
 mod benchmarking;
 mod dex_math;
 mod impl_liquidity;
+mod impl_lp_redemption;
 mod impl_swap;
 
 type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
@@ -95,8 +96,10 @@ pub mod pallet {
 		NotEnoughTokensToStake,
 		/// The user did not provide valid asset ids
 		ProvidedInvalidAssetIds,
-		/// The user did not provide valid asset ids
+		/// The dex math has had an overflow
 		MathOverflow,
+		/// The user does not have enough LP tokens for the redemption request
+		NotEnoughLPTokens,
 	}
 
 	#[pallet::call]
@@ -172,15 +175,51 @@ pub mod pallet {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
 
-			// Check the user is able to make the required deposit
-			Self::check_deposit_is_valid(&sender, (asset_a, asset_b), (asset_a_amount, 0u32.into()))?;
-
-			// Handle the swap
-			Self::process_swap(
+			// Check the user is able to make the swap
+			Self::check_deposit_is_valid(
 				&sender,
 				(asset_a, asset_b),
-				asset_a_amount,
+				(asset_a_amount, 0u32.into()),
 			)?;
+
+			// Handle the swap
+			Self::process_swap(&sender, (asset_a, asset_b), asset_a_amount)?;
+
+			Ok(())
+		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn redeem_lp_tokens(
+			origin: OriginFor<T>,
+			asset_a: AssetIdOf<T>,
+			asset_b: AssetIdOf<T>,
+			lp_token_amount: BalanceOf<T>,
+		) -> DispatchResult {
+			// check if message is signed
+			let sender = ensure_signed(origin)?;
+
+            // Get pool data
+			let pool_id = Self::get_pool_id((asset_a, asset_b));
+			let lp_token_id = Self::get_lp_token_id(&pool_id);
+
+			// Check the user is able to make redemption
+			Self::check_lp_redemption_is_valid(
+				&sender,
+				lp_token_id,
+				lp_token_amount,
+				(asset_a, asset_b),
+			)?;
+
+			// Check the user is able to make the required deposit
+			// Self::check_deposit_is_valid(&sender, (asset_a, asset_b), (asset_a_amount,
+			// 0u32.into()))?;
+
+			// // Handle the swap
+			// Self::process_swap(
+			// 	&sender,
+			// 	(asset_a, asset_b),
+			// 	asset_a_amount,
+			// )?;
 
 			Ok(())
 		}
