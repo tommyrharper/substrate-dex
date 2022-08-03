@@ -2,10 +2,9 @@
 
 use crate::dex_math::*;
 use frame_support::{
-	dispatch::{fmt::Debug, Codec, Decode, Encode},
-	// dispatch::fmt::Display,
+	dispatch::{Codec, Decode},
 	pallet_prelude::*,
-	sp_runtime::traits::{AccountIdConversion, AtLeast32Bit, AtLeast32BitUnsigned},
+	sp_runtime::traits::{AccountIdConversion, AtLeast32Bit},
 	traits::tokens::{
 		currency::Currency,
 		fungibles::{Create, Inspect, Mutate, Transfer},
@@ -14,15 +13,11 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::pallet_prelude::*;
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
 use scale_info::prelude::vec;
 
 #[cfg(test)]
 mod mock;
-
 #[cfg(test)]
 mod test_utils;
 #[cfg(test)]
@@ -32,6 +27,7 @@ mod tests;
 mod benchmarking;
 mod dex_math;
 mod impl_liquidity;
+mod impl_provide_liquidity;
 mod impl_lp_redemption;
 mod impl_swap;
 
@@ -42,10 +38,6 @@ type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
 pub mod pallet {
 	use super::*;
 
-	// How to do tight coupling:
-	// pub trait Config: frame_system::Config + pallet_assets::Config {
-
-	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
@@ -65,19 +57,6 @@ pub mod pallet {
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
-
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/v3/runtime/storage
-	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
-	pub type Something<T> = StorageValue<_, u32>;
-
-	// #[pallet::storage]
-	// #[pallet::unbounded]
-	// pub(super) type Proofs<T: Config> = StorageMap<_, Blake2_128Concat, Vec<u8>, (T::AccountId,
-	// T::BlockNumber), OptionQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
