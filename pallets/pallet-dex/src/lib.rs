@@ -166,7 +166,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-        /// Swap one type of token for another type of token
+        /// Swap asset_a for another asset_b
         /// The pool must already exist and have liquidity available
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn swap(
