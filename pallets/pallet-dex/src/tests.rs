@@ -308,8 +308,6 @@ mod swap_tests {
 
 			let origin = Origin::signed(USER_2);
 
-
-
 			assert_noop!(
                 DexModule::swap(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT),
 				Error::<Test>::NotEnoughTokensForTransaction
@@ -317,24 +315,24 @@ mod swap_tests {
 		});
     }
 
-	// #[test]
-	// fn test_swap_invalid_assets() {
-	// 	new_test_ext().execute_with(|| {
-	// 		create_liquidity_pool(
-	// 			USER,
-	// 			(ASSET_A, ASSET_B),
-	// 			(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
-	// 			MINTED_AMOUNT,
-	// 		);
+	#[test]
+	fn test_swap_invalid_assets() {
+		new_test_ext().execute_with(|| {
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 
-	// 		let origin = Origin::signed(USER_2);
+			let origin = Origin::signed(USER_2);
 
-	// 		assert_noop!(
-    //             DexModule::swap(origin, ASSET_A, ASSET_A, ASSET_A_AMOUNT),
-	// 			Error::<Test>::ProvidedInvalidAssetIds
-	// 		);
-	// 	});
-    // }
+			assert_noop!(
+                DexModule::swap(origin, ASSET_A, ASSET_A, ASSET_A_AMOUNT),
+				Error::<Test>::ProvidedInvalidAssetIds
+			);
+		});
+    }
 
 	#[test]
 	fn test_swap() {
@@ -365,6 +363,25 @@ mod swap_tests {
 #[cfg(test)]
 mod redeem_lp_tokens_tests {
 	use super::*;
+
+	#[test]
+	fn test_redeem_lp_tokens_with_invalid() {
+		new_test_ext().execute_with(|| {
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
+
+			let origin = Origin::signed(USER_2);
+
+			assert_noop!(
+				DexModule::redeem_lp_tokens(origin, ASSET_A, ASSET_A, ASSET_A_AMOUNT),
+				Error::<Test>::ProvidedInvalidAssetIds,
+			);
+		});
+	}
 
 	#[test]
 	fn test_redeem_lp_tokens_with_no_tokens() {
