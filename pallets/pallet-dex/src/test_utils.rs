@@ -120,3 +120,13 @@ pub fn check_lp_tokens_redeemed(
     check_users_balance(pool_id, asset_pair.1, 0);
     check_users_balance(pool_id, lp_token_id, 0);
 }
+
+pub fn give_user_lp_tokens(
+	user: AccountId,
+	asset_pair: (u32, u32),
+	lp_tokens_amount: u128,
+) {
+    let pool_id = DexModule::get_pool_id(asset_pair);
+    let lp_token_id = DexModule::get_lp_token_id(&pool_id);
+    give_user_asset(user, lp_token_id, lp_tokens_amount);
+}

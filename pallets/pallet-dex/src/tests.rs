@@ -273,30 +273,41 @@ mod redeem_lp_tokens_tests {
 	use super::*;
 
 	#[test]
-	fn test_redeem_lp_tokens() {
+	fn test_redeem_lp_tokens_with_no_tokens() {
 		new_test_ext().execute_with(|| {
 			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
 
 			let origin = Origin::signed(USER_2);
 
+			assert_noop!(
+				DexModule::redeem_lp_tokens(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT),
+				Error::<Test>::NotEnoughLPTokens,
+			);
+		});
+	}
+
+	#[test]
+	fn test_redeem_lp_tokens() {
+		new_test_ext().execute_with(|| {
+			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT));
+            give_user_lp_tokens(USER_2, (ASSET_A, ASSET_B), ASSET_A_AMOUNT);
+
+			let origin = Origin::signed(USER_2);
+
 			assert_ok!(DexModule::redeem_lp_tokens(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT));
 
-            check_lp_tokens_redeemed(
-                USER_2,
-                (ASSET_A, ASSET_B),
-                ASSET_A_AMOUNT,
-            );
+			check_lp_tokens_redeemed(USER_2, (ASSET_A, ASSET_B), ASSET_A_AMOUNT);
 
-            // check_users_balance(USER, ASSET_A, ASSET_A_AMOUNT);
-            // check_users_balance(USER, ASSET_B, ASSET_B_AMOUNT);
+			// check_users_balance(USER, ASSET_A, ASSET_A_AMOUNT);
+			// check_users_balance(USER, ASSET_B, ASSET_B_AMOUNT);
 
-            // let pool_id = DexModule::get_pool_id((ASSET_A, ASSET_B));
-            // let lp_token_id = DexModule::get_lp_token_id(&pool_id);
+			// let pool_id = DexModule::get_pool_id((ASSET_A, ASSET_B));
+			// let lp_token_id = DexModule::get_lp_token_id(&pool_id);
 
-            // check_users_balance(USER, lp_token_id, 0);
-            // check_users_balance(pool_id, ASSET_A, 0);
-            // check_users_balance(pool_id, ASSET_B, 0);
-            // check_users_balance(pool_id, lp_token_id, 0);
+			// check_users_balance(USER, lp_token_id, 0);
+			// check_users_balance(pool_id, ASSET_A, 0);
+			// check_users_balance(pool_id, ASSET_B, 0);
+			// check_users_balance(pool_id, lp_token_id, 0);
 		});
 	}
 }
