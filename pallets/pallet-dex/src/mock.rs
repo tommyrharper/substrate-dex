@@ -109,7 +109,7 @@ parameter_types! {
 
 impl pallet_dex::Config for Test {
 	type Event = Event;
-	type MultiAssets = Assets;
+	type Assets = Assets;
 	type Balances = Balances;
 	type PalletId = PoolPalletId;
 }

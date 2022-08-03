@@ -2,7 +2,7 @@ use super::*;
 
 impl<T: Config> Pallet<T>
 where
-	<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
+	<T::Assets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
 {
 	pub fn check_lp_redemption_is_valid(
 		sender: &T::AccountId,
@@ -31,17 +31,17 @@ where
 	) -> Result<(), DispatchError> {
 		// Get pool data
 		let pool_liquidity = Self::get_pool_liquidity(asset_pair)?;
-		let total_lp_token_supply = T::MultiAssets::total_issuance(lp_token_id);
+		let total_lp_token_supply = T::Assets::total_issuance(lp_token_id);
 		let redeemed_token_amounts =
 			get_redeemed_token_balance(lp_token_amount, total_lp_token_supply, pool_liquidity)
 				.unwrap();
 
 		// Send the user their assets
-		T::MultiAssets::transfer(asset_pair.0, &pool_id, &sender, redeemed_token_amounts.0, false)?;
-		T::MultiAssets::transfer(asset_pair.1, &pool_id, &sender, redeemed_token_amounts.1, false)?;
+		T::Assets::transfer(asset_pair.0, &pool_id, &sender, redeemed_token_amounts.0, false)?;
+		T::Assets::transfer(asset_pair.1, &pool_id, &sender, redeemed_token_amounts.1, false)?;
 
 		// Burn the LP tokens
-		T::MultiAssets::burn_from(lp_token_id, &sender, lp_token_amount)?;
+		T::Assets::burn_from(lp_token_id, &sender, lp_token_amount)?;
 
 		Ok(())
 	}

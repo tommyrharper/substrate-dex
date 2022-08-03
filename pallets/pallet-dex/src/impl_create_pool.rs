@@ -2,7 +2,7 @@ use super::*;
 
 impl<T: Config> Pallet<T>
 where
-	<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
+	<T::Assets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
 {
 
 	// TODO: get rid of unwraps
@@ -14,8 +14,8 @@ where
 		let lp_tokens_amount =
 			get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
 		let asset_id: AssetIdOf<T> = Self::get_lp_token_id(pool_id);
-		T::MultiAssets::create(asset_id, Self::account_id(), true, 1u32.into())?;
-		T::MultiAssets::mint_into(asset_id, sender, lp_tokens_amount)?;
+		T::Assets::create(asset_id, Self::account_id(), true, 1u32.into())?;
+		T::Assets::mint_into(asset_id, sender, lp_tokens_amount)?;
 		Ok(())
 	}
 
@@ -33,6 +33,7 @@ where
 		// Send the lp tokens in exchange to the pool creator
 		Self::send_lp_tokens_to_pool_creator(&sender, &pool_id, asset_amounts)?;
 
+        Self::deposit_event(Event::NewPoolCreated(pool_id));
 		Ok(())
 	}
 }

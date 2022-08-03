@@ -2,7 +2,7 @@ use super::*;
 
 impl<T: Config> Pallet<T>
 where
-	<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
+	<T::Assets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
 {
 	pub fn process_swap(
 		sender: &T::AccountId,
@@ -15,10 +15,10 @@ where
 		let swap_return = get_swap_return::<BalanceOf<T>, T>(asset_a_amount, pool_liquidity)?;
 
 		// Send tokens into pool
-		T::MultiAssets::transfer(asset_pair.0, &sender, &pool_id, asset_a_amount, false)?;
+		T::Assets::transfer(asset_pair.0, &sender, &pool_id, asset_a_amount, false)?;
 
 		// Send tokens to users
-		T::MultiAssets::transfer(asset_pair.1, &pool_id, &sender, swap_return, false)?;
+		T::Assets::transfer(asset_pair.1, &pool_id, &sender, swap_return, false)?;
 
 		Ok(())
 	}

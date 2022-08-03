@@ -270,7 +270,7 @@ impl pallet_sudo::Config for Runtime {
 
 parameter_types! {
 	pub const AssetDeposit: Balance = 100_000;
-    pub const MetadataDepositBase: Balance = 10_000;
+	pub const MetadataDepositBase: Balance = 10_000;
 	pub const MetadataDepositPerByte: Balance = 1_000;
 	pub const ApprovalDeposit: Balance = 1_000;
 	pub const StringLimit: u32 = 50;
@@ -300,8 +300,8 @@ parameter_types! {
 /// Configure the pallet-dex in pallets/template.
 impl pallet_dex::Config for Runtime {
 	type Event = Event;
-    type MultiAssets = Assets;
-    type Balances = Balances;
+	type Assets = Assets;
+	type Balances = Balances;
 	type PalletId = PoolPalletId;
 }
 

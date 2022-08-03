@@ -32,8 +32,8 @@ mod impl_provide_liquidity;
 mod impl_lp_redemption;
 mod impl_swap;
 
-type AssetIdOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::AssetId;
-type BalanceOf<T: Config> = <T::MultiAssets as Inspect<T::AccountId>>::Balance;
+type AssetIdOf<T: Config> = <T::Assets as Inspect<T::AccountId>>::AssetId;
+type BalanceOf<T: Config> = <T::Assets as Inspect<T::AccountId>>::Balance;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -44,13 +44,16 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		type MultiAssets: Inspect<Self::AccountId>
+        /// Asset type for this pallet
+		type Assets: Inspect<Self::AccountId>
 			+ Transfer<Self::AccountId>
 			+ Mutate<Self::AccountId>
 			+ Create<Self::AccountId>;
 
+        /// Balances is the Currency type for this pallet
 		type Balances: Currency<Self::AccountId>;
 
+        /// PalletId for this pallet - used to manage the liquidity pools
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
 	}
@@ -64,9 +67,12 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event documentation should end with an array that provides descriptive names for event
-		/// parameters. [something, who]
-		SomethingStored(u32, T::AccountId),
+        /// This is triggered when a new liquidity pool is successfully created
+		/// parameters: [the id of the new pool]
+        NewPoolCreated(T::AccountId),
+        /// This is triggered when a new liquidity pool is successfully created
+		/// parameters: [the id of the new pool, the id of the liquidity tokens, the number of liquidity tokens earned]
+        LiquidityProvided(T::AccountId, AssetIdOf<T>, BalanceOf<T>),
 	}
 
 	// Errors inform users that something went wrong.
@@ -85,8 +91,8 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T>
 	where
-		<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
-		<T::MultiAssets as Inspect<T::AccountId>>::AssetId: Codec,
+		<T::Assets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
+		<T::Assets as Inspect<T::AccountId>>::AssetId: Codec,
 	{
 		// TODO: see if tuples are a practical input here
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
