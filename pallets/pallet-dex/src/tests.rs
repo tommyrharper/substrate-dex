@@ -75,6 +75,9 @@ mod dex_math_tests {
 
 			let expected_return = get_redeemed_token_balance(50u128, 50u128, (100, 50)).unwrap();
 			assert_eq!(expected_return, (100, 50));
+
+			let expected_return = get_redeemed_token_balance(0u128, 50u128, (100, 50)).unwrap();
+			assert_eq!(expected_return, (0, 0));
 		});
 	}
 }
