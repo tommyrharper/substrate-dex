@@ -20,6 +20,12 @@ where
 		// Send tokens to users
 		T::Assets::transfer(asset_pair.1, &pool_id, &sender, swap_return, false)?;
 
+        Self::deposit_event(Event::TokensSwapped {
+			pool_id,
+            asset_received: asset_pair.1,
+			swap_return,
+		});
+
 		Ok(())
 	}
 }

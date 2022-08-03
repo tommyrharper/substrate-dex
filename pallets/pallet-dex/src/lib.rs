@@ -67,12 +67,21 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-        /// This is triggered when a new liquidity pool is successfully created
+        /// A new liquidity pool has been successfully created
 		/// parameters: [the id of the new pool]
-        NewPoolCreated(T::AccountId),
-        /// This is triggered when a new liquidity pool is successfully created
-		/// parameters: [the id of the new pool, the id of the liquidity tokens, the number of liquidity tokens earned]
-        LiquidityProvided(T::AccountId, AssetIdOf<T>, BalanceOf<T>),
+        NewPoolCreated { pool_id: T::AccountId },
+        /// Liquidity has been successfully added to the pool
+        LiquidityProvided {
+            pool_id: T::AccountId,
+            lp_token_id: AssetIdOf<T>,
+            earned_lp_tokens: BalanceOf<T>,
+        },
+        /// Tokens have been successfully swapped
+        TokensSwapped {
+            pool_id: T::AccountId,
+            asset_received: AssetIdOf<T>,
+            swap_return: BalanceOf<T>,
+        },
 	}
 
 	// Errors inform users that something went wrong.

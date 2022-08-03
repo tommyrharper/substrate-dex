@@ -33,7 +33,7 @@ where
 		// Send the lp tokens in exchange to the pool creator
 		Self::send_lp_tokens_to_pool_creator(&sender, &pool_id, asset_amounts)?;
 
-        Self::deposit_event(Event::NewPoolCreated(pool_id));
+        Self::deposit_event(Event::NewPoolCreated { pool_id });
 		Ok(())
 	}
 }

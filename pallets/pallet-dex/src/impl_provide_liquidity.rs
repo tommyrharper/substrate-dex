@@ -44,7 +44,12 @@ where
 			current_token_amount,
 		)?;
 
-		Self::deposit_event(Event::LiquidityProvided(pool_id, lp_token_id, lp_tokens_amount));
+		Self::deposit_event(Event::LiquidityProvided {
+			pool_id,
+			lp_token_id,
+			earned_lp_tokens: lp_tokens_amount,
+		});
+
 		Ok(())
 	}
 }
