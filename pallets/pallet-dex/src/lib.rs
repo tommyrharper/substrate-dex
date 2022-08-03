@@ -26,7 +26,7 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 mod dex_math;
-mod impl_liquidity;
+mod impl_dex;
 mod impl_create_pool;
 mod impl_provide_liquidity;
 mod impl_lp_redemption;
