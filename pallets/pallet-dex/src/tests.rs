@@ -243,4 +243,23 @@ mod dex_math_tests {
 			assert_eq!(expected_return, 10);
 		});
 	}
+
+	#[test]
+	fn test_get_lp_tokens_for_existing_pool() {
+		new_test_ext().execute_with(|| {
+			let expected_return = get_lp_tokens_for_existing_pool(50u32, 50u32, 50u32).unwrap();
+			assert_eq!(expected_return, 50);
+
+			let expected_return = get_lp_tokens_for_existing_pool(50u32, 100u32, 50u32).unwrap();
+			assert_eq!(expected_return, 25);
+		});
+	}
+
+	// #[test]
+	// fn test_get_token_b_amount() {
+	// 	new_test_ext().execute_with(|| {
+	// 		let expected_return = get_token_b_amount(50u32, (50u32, 50u32)).unwrap();
+	// 		assert_eq!(expected_return, 50);
+	// 	});
+	// }
 }

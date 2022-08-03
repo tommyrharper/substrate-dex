@@ -18,9 +18,12 @@ pub fn get_lp_tokens_for_existing_pool<T: AtLeast32Bit + CheckedDiv + CheckedMul
 	current_token_amount: T,
 	total_lp_token_supply: T,
 ) -> Option<T> {
-	let lp_share = new_token_amount.checked_div(&current_token_amount);
+    let multiplier: T = 10_000u32.into();
+	let large_new_token_amount = new_token_amount.checked_mul(&multiplier);
+
+	let lp_share = large_new_token_amount?.checked_div(&current_token_amount);
 	match lp_share {
-		Some(lp_share) => lp_share.checked_mul(&total_lp_token_supply),
+		Some(lp_share) => lp_share.checked_mul(&total_lp_token_supply)?.checked_div(&multiplier),
 		None => None,
 	}
 }
