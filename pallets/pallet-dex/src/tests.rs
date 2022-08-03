@@ -92,7 +92,7 @@ mod create_pool_tests {
 			let origin = Origin::signed(USER);
 			assert_noop!(
 				DexModule::create_pool(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT, ASSET_B_AMOUNT),
-				Error::<Test>::NotEnoughTokensToStake
+				Error::<Test>::NotEnoughTokensForTransaction
 			);
 		});
 	}
@@ -105,7 +105,7 @@ mod create_pool_tests {
 			let origin = Origin::signed(USER);
 			assert_noop!(
 				DexModule::create_pool(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT, ASSET_B_AMOUNT),
-				Error::<Test>::NotEnoughTokensToStake
+				Error::<Test>::NotEnoughTokensForTransaction
 			);
 		});
 	}
@@ -118,7 +118,7 @@ mod create_pool_tests {
 			let origin = Origin::signed(USER);
 			assert_noop!(
 				DexModule::create_pool(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT, ASSET_B_AMOUNT),
-				Error::<Test>::NotEnoughTokensToStake
+				Error::<Test>::NotEnoughTokensForTransaction
 			);
 		});
 	}
@@ -193,7 +193,7 @@ mod provide_liquidity_tests {
 
 			assert_noop!(
 				DexModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
-				Error::<Test>::NotEnoughTokensToStake
+				Error::<Test>::NotEnoughTokensForTransaction
 			);
 		});
 	}
@@ -213,7 +213,7 @@ mod provide_liquidity_tests {
 
 			assert_noop!(
 				DexModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
-				Error::<Test>::NotEnoughTokensToStake
+				Error::<Test>::NotEnoughTokensForTransaction
 			);
 		});
 	}
@@ -233,7 +233,7 @@ mod provide_liquidity_tests {
 
 			assert_noop!(
 				DexModule::provide_liquidity(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT,),
-				Error::<Test>::NotEnoughTokensToStake
+				Error::<Test>::NotEnoughTokensForTransaction
 			);
 		});
 	}
@@ -295,6 +295,46 @@ mod provide_liquidity_tests {
 #[cfg(test)]
 mod swap_tests {
 	use super::*;
+
+	// #[test]
+	// fn test_swap_without_tokens() {
+	// 	new_test_ext().execute_with(|| {
+	// 		create_liquidity_pool(
+	// 			USER,
+	// 			(ASSET_A, ASSET_B),
+	// 			(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+	// 			MINTED_AMOUNT,
+	// 		);
+
+	// 		let origin = Origin::signed(USER_2);
+
+	// 		assert_ok!(DexModule::swap(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT),);
+
+	// 		assert_noop!(
+    //             DexModule::swap(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT),
+	// 			Error::<Test>::NotEnoughTokensForTransaction
+	// 		);
+	// 	});
+    // }
+
+	// #[test]
+	// fn test_swap_invalid_assets() {
+	// 	new_test_ext().execute_with(|| {
+	// 		create_liquidity_pool(
+	// 			USER,
+	// 			(ASSET_A, ASSET_B),
+	// 			(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+	// 			MINTED_AMOUNT,
+	// 		);
+
+	// 		let origin = Origin::signed(USER_2);
+
+	// 		assert_noop!(
+    //             DexModule::swap(origin, ASSET_A, ASSET_A, ASSET_A_AMOUNT),
+	// 			Error::<Test>::ProvidedInvalidAssetIds
+	// 		);
+	// 	});
+    // }
 
 	#[test]
 	fn test_swap() {

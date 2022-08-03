@@ -2,7 +2,7 @@ use super::*;
 
 impl<T: Config> Pallet<T>
 where
-	<T::Assets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
+	<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
 {
 	pub fn account_id() -> T::AccountId {
 		T::PalletId::get().into_account_truncating()
@@ -17,7 +17,7 @@ where
 		amount: BalanceOf<T>,
 		sender: &T::AccountId,
 	) -> bool {
-		let asset_balance = T::Assets::balance(asset, &sender);
+		let asset_balance = T::MultiAssets::balance(asset, &sender);
 		asset_balance >= amount
 	}
 
@@ -53,8 +53,8 @@ where
 		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 		asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 	) -> Result<(), DispatchError> {
-		T::Assets::transfer(asset_pair.0, &sender, &pool_id, asset_amounts.0, false)?;
-		T::Assets::transfer(asset_pair.1, &sender, &pool_id, asset_amounts.1, false)?;
+		T::MultiAssets::transfer(asset_pair.0, &sender, &pool_id, asset_amounts.0, false)?;
+		T::MultiAssets::transfer(asset_pair.1, &sender, &pool_id, asset_amounts.1, false)?;
 		Ok(())
 	}
 
@@ -94,8 +94,8 @@ where
 	) -> Result<(BalanceOf<T>, BalanceOf<T>), DispatchError> {
 		let pool_id = Self::get_pool_id(asset_pair);
 
-		let token_a_liquidity = T::Assets::balance(asset_pair.0, &pool_id);
-		let token_b_liquidity = T::Assets::balance(asset_pair.1, &pool_id);
+		let token_a_liquidity = T::MultiAssets::balance(asset_pair.0, &pool_id);
+		let token_b_liquidity = T::MultiAssets::balance(asset_pair.1, &pool_id);
 
 		Ok((token_a_liquidity, token_b_liquidity))
 	}

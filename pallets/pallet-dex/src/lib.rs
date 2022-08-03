@@ -92,8 +92,8 @@ pub mod pallet {
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		/// The user tried to stake more tokens than they have
-		NotEnoughTokensToStake,
+		/// There was not enough tokens available to complete the transaction
+		NotEnoughTokensForTransaction,
 		/// The user did not provide valid asset ids
 		ProvidedInvalidAssetIds,
 		/// The dex math has had an overflow

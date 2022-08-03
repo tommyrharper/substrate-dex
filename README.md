@@ -7,8 +7,8 @@ A fresh FRAME-based [Substrate](https://www.substrate.io/) node, ready for hacki
 ## Todo
 
 - Benchmarking
-- Events
 - Queries
+- Handle non-existent currency error
 
 ## Getting Started
 
