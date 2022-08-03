@@ -87,3 +87,19 @@ pub fn create_liquidity_pool(user: AccountId, asset_pair: (u32, u32), asset_amou
 		asset_amounts.0,
 	),);
 }
+
+pub fn check_user_swap_executed(
+	user: AccountId,
+	asset_pair: (u32, u32),
+	asset_a_amount: u128,
+	liquidity_amounts: (u128, u128),
+	user_original_balance: u128,
+) {
+	let expected_return = get_swap_return::<u128, Test>(asset_a_amount, liquidity_amounts).unwrap();
+
+	check_users_balance(user, asset_pair.0, user_original_balance - asset_a_amount);
+	check_users_balance(user, asset_pair.1, expected_return);
+	let pool_id = DexModule::get_pool_id(asset_pair);
+	check_users_balance(pool_id, asset_pair.0, liquidity_amounts.0 + asset_a_amount);
+    // TODO: check pool asset b balance
+}

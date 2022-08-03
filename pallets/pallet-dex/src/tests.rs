@@ -208,14 +208,13 @@ mod swap_tests {
 
 			assert_ok!(DexModule::swap(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT),);
 
-			let expected_return =
-				get_swap_return::<u128, Test>(ASSET_A_AMOUNT, (ASSET_A_AMOUNT, ASSET_B_AMOUNT))
-					.unwrap();
-
-			check_users_balance(USER_2, ASSET_A, MINTED_AMOUNT - ASSET_A_AMOUNT);
-			check_users_balance(USER_2, ASSET_B, expected_return);
-			let pool_id = DexModule::get_pool_id((ASSET_A, ASSET_B));
-			check_users_balance(pool_id, ASSET_A, ASSET_A_AMOUNT + ASSET_A_AMOUNT);
+			check_user_swap_executed(
+				USER_2,
+				(ASSET_A, ASSET_B),
+				ASSET_A_AMOUNT,
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 		});
 	}
 }
