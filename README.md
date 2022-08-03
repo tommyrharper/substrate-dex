@@ -9,6 +9,7 @@
 - Make video
 - Documentation
   - Diagram
+  - Explain storage situation
 
 ## Getting Started
 
