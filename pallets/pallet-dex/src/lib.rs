@@ -213,6 +213,7 @@ pub mod pallet {
             // Redeem the users LP tokens
             Self::handle_lp_token_redemption(
                 &sender,
+                &pool_id,
                 lp_token_id,
                 lp_token_amount,
                 (asset_a, asset_b),

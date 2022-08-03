@@ -62,8 +62,8 @@ where
 		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 		asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 	) -> Result<(), DispatchError> {
-		T::MultiAssets::transfer(asset_pair.0, &sender, &pool_id, asset_amounts.0, false)?;
-		T::MultiAssets::transfer(asset_pair.1, &sender, &pool_id, asset_amounts.1, false)?;
+		T::MultiAssets::transfer(asset_pair.0, &sender, &pool_id, asset_amounts.0, true)?;
+		T::MultiAssets::transfer(asset_pair.1, &sender, &pool_id, asset_amounts.1, true)?;
 		Ok(())
 	}
 
