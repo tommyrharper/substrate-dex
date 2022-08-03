@@ -92,7 +92,7 @@ This constant product does not change for the lifetime of a pool.
 
 We can then calculate the marginal price of an asset `a` at any time `t` by dividing the reserves of an asset `a` by the reserves of asset `b`.
 
-p $^{t}$ = r $_{a}$ $^{t}$ / r $_{b}$ $^{t}$
+![](2022-08-03-12-21-38.png)
 
 The price is essentially a ratio of the volume of each asset in the pool, and the model relies on market arbitrage to ensure the price is always driven back to a normal market rate
 
