@@ -9,7 +9,6 @@ A fresh FRAME-based [Substrate](https://www.substrate.io/) node, ready for hacki
 - Benchmarking
 - Events
 - Queries
-- Test dex_math utils
 
 ## Getting Started
 

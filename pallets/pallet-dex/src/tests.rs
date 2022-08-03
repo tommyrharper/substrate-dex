@@ -261,8 +261,10 @@ mod dex_math_tests {
 	fn test_get_swap_return() {
 		new_test_ext().execute_with(|| {
 			let expected_return = get_swap_return::<u128, Test>(50u128, (50u128, 100u128)).unwrap();
-
 			assert_eq!(expected_return, 45);
+
+			let expected_return = get_swap_return::<u128, Test>(50u128, (100u128, 50u128)).unwrap();
+			assert_eq!(expected_return, 15);
 		});
 	}
 }
