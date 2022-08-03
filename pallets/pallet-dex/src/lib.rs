@@ -27,6 +27,7 @@ mod tests;
 mod benchmarking;
 mod dex_math;
 mod impl_liquidity;
+mod impl_create_pool;
 mod impl_provide_liquidity;
 mod impl_lp_redemption;
 mod impl_swap;

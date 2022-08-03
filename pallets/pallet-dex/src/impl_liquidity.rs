@@ -12,14 +12,6 @@ where
 		T::PalletId::get().into_sub_account_truncating(sub)
 	}
 
-	pub fn pot(asset_id: AssetIdOf<T>) -> BalanceOf<T> {
-		T::MultiAssets::balance(asset_id, &Self::account_id())
-	}
-
-	pub fn sub_pot(asset_id: AssetIdOf<T>, sub: &[u8; 16]) -> BalanceOf<T> {
-		T::MultiAssets::balance(asset_id, &Self::sub_account_id(sub))
-	}
-
 	pub fn has_enough_tokens(
 		asset: AssetIdOf<T>,
 		amount: BalanceOf<T>,
@@ -74,20 +66,6 @@ where
 		asset_id
 	}
 
-	// TODO: get rid of unwraps
-	pub fn send_lp_tokens_to_pool_creator(
-		sender: &T::AccountId,
-		pool_id: &T::AccountId,
-		asset_amounts: (BalanceOf<T>, BalanceOf<T>),
-	) -> Result<(), DispatchError> {
-		let lp_tokens_amount =
-			get_lp_tokens_for_new_pool(asset_amounts.0, asset_amounts.1).unwrap();
-		let asset_id: AssetIdOf<T> = Self::get_lp_token_id(pool_id);
-		T::MultiAssets::create(asset_id, Self::account_id(), true, 1u32.into())?;
-		T::MultiAssets::mint_into(asset_id, sender, lp_tokens_amount)?;
-		Ok(())
-	}
-
 	pub fn check_deposit_is_valid(
 		sender: &T::AccountId,
 		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
@@ -98,23 +76,6 @@ where
 
 		// check if sender has enough tokens to stake
 		Self::has_enough_of_both_tokens(&sender, asset_pair, asset_amounts)?;
-
-		Ok(())
-	}
-
-	pub fn create_new_pool(
-		sender: &T::AccountId,
-		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
-		asset_amounts: (BalanceOf<T>, BalanceOf<T>),
-	) -> Result<(), DispatchError> {
-		// Initialize the new pool
-		let pool_id = Self::initialize_pool(asset_pair);
-
-		// Transfer the tokens to the new pool
-		Self::transfer_tokens_to_pool(&sender, &pool_id, asset_pair, asset_amounts)?;
-
-		// Send the lp tokens in exchange to the pool creator
-		Self::send_lp_tokens_to_pool_creator(&sender, &pool_id, asset_amounts)?;
 
 		Ok(())
 	}
