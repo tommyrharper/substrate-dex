@@ -38,6 +38,18 @@ We can always find the relevant pool and LP tokens for any given asset pair simp
 
 This means that the only extra storage `pallet-dex` needs is that included in the `pallet-assets` pallet, which can be used to create, transfer and burn tokens using this model.
 
+## Extrinsics
+
+
+- `create_pool`
+  - Create a new DEX pool for a given asset pair
+- `provide_liquidity`
+  - Provide further liquidity to an already existing pool
+- `swap`
+  - Swap one type of token for another type of token
+- `redeem_liquidity`
+  - Redeem LP tokens in exchange for their underlying liquidity in the pool
+
 ## DEX Mathematics
 
 I used the constant product formula for handling DEX liquidity and pricing:

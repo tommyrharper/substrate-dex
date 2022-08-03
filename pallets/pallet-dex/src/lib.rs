@@ -108,7 +108,7 @@ pub mod pallet {
 		<T::Assets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
 		<T::Assets as Inspect<T::AccountId>>::AssetId: Codec,
 	{
-		// TODO: see if tuples are a practical input here
+        /// Create a new DEX pool for a given asset pair
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn create_pool(
 			origin: OriginFor<T>,
@@ -133,6 +133,7 @@ pub mod pallet {
 			Ok(())
 		}
 
+        /// Provide further liquidity to an already existing pool
 		#[pallet::weight(5_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn provide_liquidity(
 			origin: OriginFor<T>,
@@ -165,6 +166,8 @@ pub mod pallet {
 			Ok(())
 		}
 
+        /// Swap one type of token for another type of token
+        /// The pool must already exist and have liquidity available
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn swap(
 			origin: OriginFor<T>,
@@ -188,6 +191,7 @@ pub mod pallet {
 			Ok(())
 		}
 
+        /// Redeem LP tokens in exchange for their underlying liquidity in the pool
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn redeem_lp_tokens(
 			origin: OriginFor<T>,
