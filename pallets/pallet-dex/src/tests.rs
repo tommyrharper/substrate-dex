@@ -403,7 +403,7 @@ mod redeem_lp_tokens_tests {
 	}
 
 	#[test]
-	fn test_redeem_lp_tokens() {
+	fn test_all_redeem_lp_tokens() {
 		new_test_ext().execute_with(|| {
 			create_liquidity_pool(
 				USER,
@@ -417,7 +417,26 @@ mod redeem_lp_tokens_tests {
 
 			assert_ok!(DexModule::redeem_lp_tokens(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT));
 
-			check_lp_tokens_redeemed(USER, (ASSET_A, ASSET_B), ASSET_A_AMOUNT);
+			check_all_lp_tokens_redeemed(USER, (ASSET_A, ASSET_B), ASSET_A_AMOUNT);
+		});
+	}
+
+	#[test]
+	fn test_redeem_half_of_lp_tokens() {
+		new_test_ext().execute_with(|| {
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				ASSET_A_AMOUNT,
+			);
+			check_users_balance(USER, ASSET_A, 0u32.into());
+
+			let origin = Origin::signed(USER);
+
+			assert_ok!(DexModule::redeem_lp_tokens(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT / 2));
+
+			check_half_of_lp_tokens_redeemed(USER, (ASSET_A, ASSET_B), ASSET_A_AMOUNT / 2);
 		});
 	}
 }
