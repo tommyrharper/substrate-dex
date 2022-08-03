@@ -90,15 +90,15 @@ constant_product = initial_token_a_deposit * initial_token_b_deposit
 
 This constant product does not change for the lifetime of a pool.
 
-We can then calculate the marginal price of an asset `a` at any time `t` by dividing the reserves of an asset `a` by the reserves of asset `b`.
+We can then calculate the marginal price of an asset `a` at any time `t` by dividing the reserves of an asset `a` by the reserves of asset `b`:
 
 ![](2022-08-03-12-21-38.png)
 
-The price is essentially a ratio of the volume of each asset in the pool, and the model relies on market arbitrage to ensure the price is always driven back to a normal market rate
+The price is essentially a ratio of the volume of each asset in the pool, and the model relies on market arbitrage to ensure the price is always driven back to a normal market rate.
 
 ![](2022-08-03-11-35-37.png)
 
-We get the amount of lp_tokens provided to the initial liquidity provider by square rooting the constant product
+We get the amount of lp_tokens provided to the initial liquidity provider by square rooting the constant product:
 
 ```
 lp_tokens_for_new_pool = sqrt(constant_product)
