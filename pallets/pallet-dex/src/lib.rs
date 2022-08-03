@@ -210,16 +210,13 @@ pub mod pallet {
 				(asset_a, asset_b),
 			)?;
 
-			// Check the user is able to make the required deposit
-			// Self::check_deposit_is_valid(&sender, (asset_a, asset_b), (asset_a_amount,
-			// 0u32.into()))?;
-
-			// // Handle the swap
-			// Self::process_swap(
-			// 	&sender,
-			// 	(asset_a, asset_b),
-			// 	asset_a_amount,
-			// )?;
+            // Redeem the users LP tokens
+            Self::handle_lp_token_redemption(
+                &sender,
+                lp_token_id,
+                lp_token_amount,
+                (asset_a, asset_b),
+            )?;
 
 			Ok(())
 		}
