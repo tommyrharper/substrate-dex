@@ -20,8 +20,10 @@ pub fn get_lp_tokens_for_existing_pool<T: AtLeast32Bit + CheckedDiv + CheckedMul
 	current_token_amount: T,
 	total_lp_token_supply: T,
 ) -> Option<T> {
-    let current_token_amount: T = if current_token_amount == 0u32.into() { 1u32.into() } else { current_token_amount };
-    let total_lp_token_supply: T = if total_lp_token_supply == 0u32.into() { 1u32.into() } else { total_lp_token_supply };
+	let current_token_amount: T =
+		if current_token_amount == 0u32.into() { 1u32.into() } else { current_token_amount };
+	let total_lp_token_supply: T =
+		if total_lp_token_supply == 0u32.into() { 1u32.into() } else { total_lp_token_supply };
 
 	let multiplier: T = MULTIPLIER.into();
 	let large_new_token_amount = new_token_amount.checked_mul(&multiplier);
@@ -39,13 +41,17 @@ pub fn get_token_b_amount<T: AtLeast32Bit + CheckedDiv + CheckedMul>(
 ) -> Option<T> {
 	let multiplier: T = MULTIPLIER.into();
 
-    let liquidity_a_amount: T = if liquidity_amounts.0 == 0u32.into() { 1u32.into() } else { liquidity_amounts.0 };
-    let liquidity_b_amount: T = if liquidity_amounts.1 == 0u32.into() { 1u32.into() } else { liquidity_amounts.1 };
+	let liquidity_a_amount: T =
+		if liquidity_amounts.0 == 0u32.into() { 1u32.into() } else { liquidity_amounts.0 };
+	let liquidity_b_amount: T =
+		if liquidity_amounts.1 == 0u32.into() { 1u32.into() } else { liquidity_amounts.1 };
 
-	let liquidity_ratio = liquidity_a_amount.checked_mul(&multiplier)?.checked_div(&liquidity_b_amount);
+	let liquidity_ratio =
+		liquidity_a_amount.checked_mul(&multiplier)?.checked_div(&liquidity_b_amount);
 
 	match liquidity_ratio {
-		Some(liquidity_ratio) => token_a_amount.checked_mul(&multiplier)?.checked_div(&liquidity_ratio),
+		Some(liquidity_ratio) =>
+			token_a_amount.checked_mul(&multiplier)?.checked_div(&liquidity_ratio),
 		None => None,
 	}
 }
@@ -68,17 +74,20 @@ pub fn get_swap_return<
 	let swap_fee_percentage: T = SWAP_FEE_PERCENTAGE.into();
 	let swap_fee_percentage_divisor: T = SWAP_FEE_PERCENTAGE_DIVISOR.into();
 
+	let liquidity_a_amount: T =
+		if liquidity_amounts.0 == 0u32.into() { 1u32.into() } else { liquidity_amounts.0 };
+	let liquidity_b_amount: T =
+		if liquidity_amounts.1 == 0u32.into() { 1u32.into() } else { liquidity_amounts.1 };
+
 	let returned_fee_percentage_multiplier: T = swap_fee_percentage_divisor
 		.checked_sub(&swap_fee_percentage)
 		.ok_or(Error::<Config>::MathOverflow)?;
 
-	let constant_product = liquidity_amounts
-		.0
-		.checked_mul(&liquidity_amounts.1)
+	let constant_product = liquidity_a_amount
+		.checked_mul(&liquidity_b_amount)
 		.ok_or(Error::<Config>::MathOverflow)?;
 
-	let new_token_a_liquidity = liquidity_amounts
-		.0
+	let new_token_a_liquidity = liquidity_a_amount
 		.checked_add(&token_a_amount)
 		.ok_or(Error::<Config>::MathOverflow)?;
 
@@ -86,8 +95,7 @@ pub fn get_swap_return<
 		.checked_div(&new_token_a_liquidity)
 		.ok_or(Error::<Config>::MathOverflow)?;
 
-	let total_b_decrease = liquidity_amounts
-		.1
+	let total_b_decrease = liquidity_b_amount
 		.checked_sub(&new_token_b_liquidity)
 		.ok_or(Error::<Config>::MathOverflow)?;
 
