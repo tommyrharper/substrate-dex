@@ -198,7 +198,7 @@ pub mod pallet {
 			// check if message is signed
 			let sender = ensure_signed(origin)?;
 
-            // Get pool data
+			// Get pool data
 			let pool_id = Self::get_pool_id((asset_a, asset_b));
 			let lp_token_id = Self::get_lp_token_id(&pool_id);
 
@@ -210,14 +210,14 @@ pub mod pallet {
 				(asset_a, asset_b),
 			)?;
 
-            // Redeem the users LP tokens
-            Self::handle_lp_token_redemption(
-                &sender,
-                &pool_id,
-                lp_token_id,
-                lp_token_amount,
-                (asset_a, asset_b),
-            )?;
+			// Redeem the users LP tokens
+			Self::handle_lp_token_redemption(
+				&sender,
+				&pool_id,
+				lp_token_id,
+				lp_token_amount,
+				(asset_a, asset_b),
+			)?;
 
 			Ok(())
 		}

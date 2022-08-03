@@ -139,14 +139,24 @@ mod create_pool_tests {
 	#[test]
 	fn create_pool_with_enough_assets() {
 		new_test_ext().execute_with(|| {
-			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT), MINTED_AMOUNT);
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 		});
 	}
 
 	#[test]
 	fn create_pool_transfers_tokens() {
 		new_test_ext().execute_with(|| {
-			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT), MINTED_AMOUNT);
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 
 			check_liquidity_taken(
 				USER,
@@ -172,7 +182,12 @@ mod provide_liquidity_tests {
 	#[test]
 	fn provide_liquidity_without_any_token() {
 		new_test_ext().execute_with(|| {
-			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT), MINTED_AMOUNT);
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 
 			let origin = Origin::signed(USER_2);
 
@@ -186,7 +201,12 @@ mod provide_liquidity_tests {
 	#[test]
 	fn provide_liquidity_without_first_token() {
 		new_test_ext().execute_with(|| {
-			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT), MINTED_AMOUNT);
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 			give_user_asset(USER_2, ASSET_B, MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER_2);
@@ -201,7 +221,12 @@ mod provide_liquidity_tests {
 	#[test]
 	fn provide_liquidity_without_second_token() {
 		new_test_ext().execute_with(|| {
-			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT), MINTED_AMOUNT);
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 			give_user_asset(USER_2, ASSET_A, MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER_2);
@@ -216,7 +241,12 @@ mod provide_liquidity_tests {
 	#[test]
 	fn provide_liquidity_same_asset_ids() {
 		new_test_ext().execute_with(|| {
-			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT), MINTED_AMOUNT);
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 			give_user_two_assets(USER_2, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER_2);
@@ -231,7 +261,12 @@ mod provide_liquidity_tests {
 	#[test]
 	fn provide_liquidity() {
 		new_test_ext().execute_with(|| {
-			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT), MINTED_AMOUNT);
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 			give_user_two_assets(USER_2, (ASSET_A, ASSET_B), MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER_2);
@@ -264,7 +299,12 @@ mod swap_tests {
 	#[test]
 	fn test_swap() {
 		new_test_ext().execute_with(|| {
-			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT), MINTED_AMOUNT);
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 			give_user_asset(USER_2, ASSET_A, MINTED_AMOUNT);
 
 			let origin = Origin::signed(USER_2);
@@ -289,7 +329,12 @@ mod redeem_lp_tokens_tests {
 	#[test]
 	fn test_redeem_lp_tokens_with_no_tokens() {
 		new_test_ext().execute_with(|| {
-			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT), MINTED_AMOUNT);
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 
 			let origin = Origin::signed(USER_2);
 
@@ -303,25 +348,19 @@ mod redeem_lp_tokens_tests {
 	#[test]
 	fn test_redeem_lp_tokens() {
 		new_test_ext().execute_with(|| {
-			create_liquidity_pool(USER, (ASSET_A, ASSET_B), (ASSET_A_AMOUNT, ASSET_B_AMOUNT), ASSET_A_AMOUNT);
-            check_users_balance(USER, ASSET_A, 0u32.into());
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				ASSET_A_AMOUNT,
+			);
+			check_users_balance(USER, ASSET_A, 0u32.into());
 
 			let origin = Origin::signed(USER);
 
 			assert_ok!(DexModule::redeem_lp_tokens(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT));
 
 			check_lp_tokens_redeemed(USER, (ASSET_A, ASSET_B), ASSET_A_AMOUNT);
-
-			// check_users_balance(USER, ASSET_A, ASSET_A_AMOUNT);
-			// check_users_balance(USER, ASSET_B, ASSET_B_AMOUNT);
-
-			// let pool_id = DexModule::get_pool_id((ASSET_A, ASSET_B));
-			// let lp_token_id = DexModule::get_lp_token_id(&pool_id);
-
-			// check_users_balance(USER, lp_token_id, 0);
-			// check_users_balance(pool_id, ASSET_A, 0);
-			// check_users_balance(pool_id, ASSET_B, 0);
-			// check_users_balance(pool_id, lp_token_id, 0);
 		});
 	}
 }

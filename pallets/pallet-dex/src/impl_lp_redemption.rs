@@ -29,11 +29,12 @@ where
 		lp_token_amount: BalanceOf<T>,
 		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 	) -> Result<(), DispatchError> {
-        // Get pool data
+		// Get pool data
 		let pool_liquidity = Self::get_pool_liquidity(asset_pair)?;
 		let total_lp_token_supply = T::MultiAssets::total_issuance(lp_token_id);
 		let redeemed_token_amounts =
-			get_redeemed_token_balance(lp_token_amount, total_lp_token_supply, pool_liquidity).unwrap();
+			get_redeemed_token_balance(lp_token_amount, total_lp_token_supply, pool_liquidity)
+				.unwrap();
 
 		// Send the user their assets
 		T::MultiAssets::transfer(asset_pair.0, &pool_id, &sender, redeemed_token_amounts.0, false)?;

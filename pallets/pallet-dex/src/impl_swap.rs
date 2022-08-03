@@ -9,11 +9,10 @@ where
 		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 		asset_a_amount: BalanceOf<T>,
 	) -> Result<(), DispatchError> {
-        // Get swap data
+		// Get swap data
 		let pool_id = Self::get_pool_id(asset_pair);
-        let pool_liquidity = Self::get_pool_liquidity(asset_pair)?;
-        let swap_return =
-				get_swap_return::<BalanceOf<T>, T>(asset_a_amount, pool_liquidity)?;
+		let pool_liquidity = Self::get_pool_liquidity(asset_pair)?;
+		let swap_return = get_swap_return::<BalanceOf<T>, T>(asset_a_amount, pool_liquidity)?;
 
 		// Send tokens into pool
 		T::MultiAssets::transfer(asset_pair.0, &sender, &pool_id, asset_a_amount, false)?;
@@ -21,6 +20,6 @@ where
 		// Send tokens to users
 		T::MultiAssets::transfer(asset_pair.1, &pool_id, &sender, swap_return, false)?;
 
-        Ok(())
+		Ok(())
 	}
 }

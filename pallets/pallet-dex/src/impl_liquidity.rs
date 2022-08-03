@@ -1,12 +1,9 @@
 use super::*;
 
-const POOL_NATIVE_BALANCE: u32 = 2_000_000_000;
-
 impl<T: Config> Pallet<T>
 where
 	<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
 {
-	// TODO: check which of these functions need to be published
 	pub fn account_id() -> T::AccountId {
 		T::PalletId::get().into_account_truncating()
 	}
@@ -54,7 +51,6 @@ where
 
 	pub fn initialize_pool(asset_pair: (AssetIdOf<T>, AssetIdOf<T>)) -> T::AccountId {
 		let pool_id = Self::get_pool_id(asset_pair);
-		// T::Balances::make_free_balance_be(&pool_id, POOL_NATIVE_BALANCE.into());
 		T::Balances::make_free_balance_be(&pool_id, T::Balances::minimum_balance());
 		pool_id
 	}
@@ -170,8 +166,7 @@ where
 		pool_liquidity: (BalanceOf<T>, BalanceOf<T>),
 		asset_a_amount: BalanceOf<T>,
 	) -> Result<BalanceOf<T>, DispatchError> {
-		let second_asset_amount =
-			get_token_b_amount(asset_a_amount, pool_liquidity).unwrap();
+		let second_asset_amount = get_token_b_amount(asset_a_amount, pool_liquidity).unwrap();
 
 		Ok(second_asset_amount)
 	}
