@@ -101,5 +101,5 @@ pub fn check_user_swap_executed(
 	check_users_balance(user, asset_pair.1, expected_return);
 	let pool_id = DexModule::get_pool_id(asset_pair);
 	check_users_balance(pool_id, asset_pair.0, liquidity_amounts.0 + asset_a_amount);
-    // TODO: check pool asset b balance
+	check_users_balance(pool_id, asset_pair.1, liquidity_amounts.1 - expected_return);
 }
