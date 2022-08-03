@@ -121,6 +121,7 @@ token_return = (starting_amount_of_b_tokens - (constant_product / new_total_amou
 
 THe following items I would have liked to do given more time:
 - Further testing, particularly focusing on mathematic edge cases, which are a security risk to the protocol.
+- One particular important edge case that I do not handle is creating and interacting with a pool for tokens that do not exist. This should throw a useful error.
 - Further refactoring of the code for simplicity, efficiency (sometimes storage is being read twice where it could be read once just via a reorganization of the code) and readability.
   - Readability particularly could be further improved in my `dex_math` functions, as they became quite ugly due to my defensive programming measures. This could be greatly improved upon.
 - Benchmarking for all my extrinsics.
