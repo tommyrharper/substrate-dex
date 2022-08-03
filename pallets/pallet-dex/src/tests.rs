@@ -66,6 +66,17 @@ mod dex_math_tests {
 			assert_eq!(expected_return, 15);
 		});
 	}
+
+	#[test]
+	fn test_get_redeemed_token_balance() {
+		new_test_ext().execute_with(|| {
+			let expected_return = get_redeemed_token_balance(50u128, 100u128, (100, 50)).unwrap();
+			assert_eq!(expected_return, (50, 25));
+
+			let expected_return = get_redeemed_token_balance(50u128, 50u128, (100, 50)).unwrap();
+			assert_eq!(expected_return, (100, 50));
+		});
+	}
 }
 
 #[cfg(test)]

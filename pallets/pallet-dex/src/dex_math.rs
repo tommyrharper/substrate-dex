@@ -109,3 +109,30 @@ pub fn get_swap_return<
 
 	Ok(returned_token_b_amount_minus_fee)
 }
+
+pub fn get_redeemed_token_balance<T: AtLeast32Bit + CheckedDiv + CheckedMul>(
+	lp_tokens: T,
+	total_lp_token_supply: T,
+	liquidity_amounts: (T, T),
+) -> Option<(T, T)> {
+	let multiplier: T = MULTIPLIER.into();
+
+	let total_lp_token_supply: T =
+		if total_lp_token_supply == 0u32.into() { 1u32.into() } else { total_lp_token_supply };
+	let liquidity_a_amount: T =
+		if liquidity_amounts.0 == 0u32.into() { 1u32.into() } else { liquidity_amounts.0 };
+	let liquidity_b_amount: T =
+		if liquidity_amounts.1 == 0u32.into() { 1u32.into() } else { liquidity_amounts.1 };
+
+	let large_new_lp_token_amount = lp_tokens.checked_mul(&multiplier);
+
+	let lp_share = large_new_lp_token_amount?.checked_div(&total_lp_token_supply);
+
+	match lp_share {
+		Some(lp_share) => Some((
+			lp_share.checked_mul(&liquidity_a_amount)?.checked_div(&multiplier)?,
+			lp_share.checked_mul(&liquidity_b_amount)?.checked_div(&multiplier)?,
+		)),
+		None => None,
+	}
+}
