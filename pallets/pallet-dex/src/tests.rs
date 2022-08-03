@@ -296,26 +296,26 @@ mod provide_liquidity_tests {
 mod swap_tests {
 	use super::*;
 
-	// #[test]
-	// fn test_swap_without_tokens() {
-	// 	new_test_ext().execute_with(|| {
-	// 		create_liquidity_pool(
-	// 			USER,
-	// 			(ASSET_A, ASSET_B),
-	// 			(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
-	// 			MINTED_AMOUNT,
-	// 		);
+	#[test]
+	fn test_swap_without_tokens() {
+		new_test_ext().execute_with(|| {
+			create_liquidity_pool(
+				USER,
+				(ASSET_A, ASSET_B),
+				(ASSET_A_AMOUNT, ASSET_B_AMOUNT),
+				MINTED_AMOUNT,
+			);
 
-	// 		let origin = Origin::signed(USER_2);
+			let origin = Origin::signed(USER_2);
 
-	// 		assert_ok!(DexModule::swap(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT),);
 
-	// 		assert_noop!(
-    //             DexModule::swap(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT),
-	// 			Error::<Test>::NotEnoughTokensForTransaction
-	// 		);
-	// 	});
-    // }
+
+			assert_noop!(
+                DexModule::swap(origin, ASSET_A, ASSET_B, ASSET_A_AMOUNT),
+				Error::<Test>::NotEnoughTokensForTransaction
+			);
+		});
+    }
 
 	// #[test]
 	// fn test_swap_invalid_assets() {
