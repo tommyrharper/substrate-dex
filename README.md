@@ -147,6 +147,7 @@ THe following items I would have liked to do given more time:
 - One particular important edge case that I do not handle is creating and interacting with a pool for tokens that do not exist. This should throw a useful error.
 - Further refactoring of the code for simplicity, efficiency (sometimes storage is being read twice where it could be read once just via a reorganization of the code) and readability.
   - Readability particularly could be further improved in my `dex_math` functions, as they became quite ugly due to my defensive programming measures. This could be greatly improved upon.
+- Extra the swap fee percentage into a configuration variable.
 - Benchmarking for all my extrinsics.
 - Building a nice front-end.
 
