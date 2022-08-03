@@ -1,5 +1,25 @@
 # Pallet DEX
 
+A substrate node with an integrated DEX pallet.
+
+## Table of Contents
+
+- [Pallet DEX](#pallet-dex)
+  - [Table of Contents](#table-of-contents)
+  - [Intro](#intro)
+  - [Features](#features)
+  - [Quick Start](#quick-start)
+  - [Interacting with the node](#interacting-with-the-node)
+  - [Architecture](#architecture)
+    - [Efficiency and Storage](#efficiency-and-storage)
+    - [Coupling](#coupling)
+    - [Extrinsics](#extrinsics)
+    - [DEX Mathematics](#dex-mathematics)
+  - [What I didn't have time to do](#what-i-didnt-have-time-to-do)
+  - [Final Notes](#final-notes)
+
+## Intro
+
 My project is a new pallet - "pallet-dex".
 
 - It is integrated into a working node.
@@ -47,7 +67,7 @@ You can follow a 4 stage process to test out the functionality:
 
 ## Architecture
 
-## Efficiency and Storage
+### Efficiency and Storage
 
 When architecting my DEX, one of my primary concerns was performance. A DEX must be fast and efficient to run on blockchain without bloating the network and state.
 
@@ -68,8 +88,11 @@ We can always find the relevant pool and LP tokens for any given asset pair simp
 
 This means that the only extra storage `pallet-dex` needs is that included in the `pallet-assets` pallet, which can be used to create, transfer and burn tokens using this model.
 
-## Extrinsics
+### Coupling
 
+I used a loosely coupled architecture in order make my pallet more testable, scalable and modular.
+
+### Extrinsics
 
 - `create_pool`
   - Create a new DEX pool for a given asset pair
@@ -80,7 +103,7 @@ This means that the only extra storage `pallet-dex` needs is that included in th
 - `redeem_liquidity`
   - Redeem LP tokens in exchange for their underlying liquidity in the pool
 
-## DEX Mathematics
+### DEX Mathematics
 
 I used the constant product formula for handling DEX liquidity and pricing:
 
@@ -125,5 +148,17 @@ THe following items I would have liked to do given more time:
 - Further refactoring of the code for simplicity, efficiency (sometimes storage is being read twice where it could be read once just via a reorganization of the code) and readability.
   - Readability particularly could be further improved in my `dex_math` functions, as they became quite ugly due to my defensive programming measures. This could be greatly improved upon.
 - Benchmarking for all my extrinsics.
-- Building a nice fancy front-end.
+- Building a nice front-end.
+
+## Final Notes
+
+Thanks for taking the time to go through this.
+
+I really enjoyed this project and learnt a huge amount!
+
+Being new to rust and substrate, it was really thrilling to dive deep on this and come out able to build something I had no idea how to do before starting the course.
+
+Thanks for all the help and support along the way!
+
+
 
