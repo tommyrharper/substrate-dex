@@ -232,4 +232,15 @@ mod dex_math_tests {
 			assert_eq!(expected_return, 45);
 		});
 	}
+
+	#[test]
+	fn test_get_lp_tokens_for_new_pool() {
+		new_test_ext().execute_with(|| {
+			let expected_return = get_lp_tokens_for_new_pool(50u32, 50u32).unwrap();
+			assert_eq!(expected_return, 50);
+
+			let expected_return = get_lp_tokens_for_new_pool(25u32, 4u32).unwrap();
+			assert_eq!(expected_return, 10);
+		});
+	}
 }
