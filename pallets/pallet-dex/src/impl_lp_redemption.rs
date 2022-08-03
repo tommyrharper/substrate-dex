@@ -36,8 +36,8 @@ where
 			get_redeemed_token_balance(lp_token_amount, total_lp_token_supply, pool_liquidity).unwrap();
 
 		// Send the user their assets
-		T::MultiAssets::transfer(asset_pair.0, &pool_id, &sender, redeemed_token_amounts.0, true)?;
-		T::MultiAssets::transfer(asset_pair.1, &pool_id, &sender, redeemed_token_amounts.1, true)?;
+		T::MultiAssets::transfer(asset_pair.0, &pool_id, &sender, redeemed_token_amounts.0, false)?;
+		T::MultiAssets::transfer(asset_pair.1, &pool_id, &sender, redeemed_token_amounts.1, false)?;
 
 		// Burn the LP tokens
 		T::MultiAssets::burn_from(lp_token_id, &sender, lp_token_amount)?;

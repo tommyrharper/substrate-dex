@@ -1,5 +1,7 @@
 use super::*;
 
+const POOL_NATIVE_BALANCE: u32 = 2_000_000_000;
+
 impl<T: Config> Pallet<T>
 where
 	<T::MultiAssets as Inspect<T::AccountId>>::AssetId: AtLeast32Bit,
@@ -52,6 +54,7 @@ where
 
 	pub fn initialize_pool(asset_pair: (AssetIdOf<T>, AssetIdOf<T>)) -> T::AccountId {
 		let pool_id = Self::get_pool_id(asset_pair);
+		// T::Balances::make_free_balance_be(&pool_id, POOL_NATIVE_BALANCE.into());
 		T::Balances::make_free_balance_be(&pool_id, T::Balances::minimum_balance());
 		pool_id
 	}
@@ -62,8 +65,8 @@ where
 		asset_pair: (AssetIdOf<T>, AssetIdOf<T>),
 		asset_amounts: (BalanceOf<T>, BalanceOf<T>),
 	) -> Result<(), DispatchError> {
-		T::MultiAssets::transfer(asset_pair.0, &sender, &pool_id, asset_amounts.0, true)?;
-		T::MultiAssets::transfer(asset_pair.1, &sender, &pool_id, asset_amounts.1, true)?;
+		T::MultiAssets::transfer(asset_pair.0, &sender, &pool_id, asset_amounts.0, false)?;
+		T::MultiAssets::transfer(asset_pair.1, &sender, &pool_id, asset_amounts.1, false)?;
 		Ok(())
 	}
 

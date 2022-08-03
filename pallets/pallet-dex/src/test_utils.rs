@@ -74,8 +74,9 @@ pub fn check_lp_tokens_sent_to_provider(
 	check_users_balance(user, lp_token_id, amount);
 }
 
-pub fn create_liquidity_pool(user: AccountId, asset_pair: (u32, u32), asset_amounts: (u128, u128)) {
-	create_and_give_user_two_assets(user, asset_pair, 1_000_000_000);
+pub fn create_liquidity_pool(user: AccountId, asset_pair: (u32, u32), asset_amounts: (u128, u128), user_initial_balance: u128) {
+	// create_and_give_user_two_assets(user, asset_pair, asset_amounts.0);
+	create_and_give_user_two_assets(user, asset_pair, user_initial_balance);
 
 	let origin = Origin::signed(user);
 
@@ -119,14 +120,4 @@ pub fn check_lp_tokens_redeemed(
     check_users_balance(pool_id, asset_pair.0, 0);
     check_users_balance(pool_id, asset_pair.1, 0);
     check_users_balance(pool_id, lp_token_id, 0);
-}
-
-pub fn give_user_lp_tokens(
-	user: AccountId,
-	asset_pair: (u32, u32),
-	lp_tokens_amount: u128,
-) {
-    let pool_id = DexModule::get_pool_id(asset_pair);
-    let lp_token_id = DexModule::get_lp_token_id(&pool_id);
-    give_user_asset(user, lp_token_id, lp_tokens_amount);
 }
